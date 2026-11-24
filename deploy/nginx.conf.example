@@ -7,7 +7,12 @@ limit_req_zone $binary_remote_addr zone=hashti_upload:10m rate=10r/m;
 server {
     listen 80;
     server_name CHANGE_ME.example.com;
-    return 301 https://CHANGE_ME.example.com$request_uri;
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/hashti-acme;
+    }
+    location / {
+        return 301 https://CHANGE_ME.example.com$request_uri;
+    }
 }
 
 server {
