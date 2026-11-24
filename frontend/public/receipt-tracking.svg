@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="152" height="152" viewBox="0 0 152 152" role="img" aria-label="ثبت با کد پیگیری">
+  <rect width="152" height="152" rx="20" fill="#e8f3f9"/>
+  <path d="M43 24h52l15 15v86H43z" fill="#fff" stroke="#0067a5" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M95 24v15h15" fill="none" stroke="#0067a5" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M57 60h39M57 74h39" stroke="#a3c9dc" stroke-width="5" stroke-linecap="round"/>
+  <rect x="54" y="88" width="45" height="24" rx="7" fill="#ff7700"/>
+  <path d="M63 100h27" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="4 5"/>
+</svg>

@@ -1,0 +1,32 @@
+{
+  "task": "H28",
+  "status": "in_progress",
+  "checks": [
+    "78 Backend tests passed on real PostgreSQL test schemas; Ruff passed",
+    "4 Frontend tests and Frontend typecheck passed",
+    "Shared absolute uploads path is configurable and covered by three new tests",
+    "Example systemd, Nginx/TLS/same-origin/rate-limit, environment, backup, restore and ledger-check files were prepared",
+    "Local application database role lacks CREATEDB, so no existing database was overwritten to simulate restore"
+  ],
+  "evidence": [
+    "backend/app/core/storage.py",
+    "backend/tests/test_storage.py",
+    "deploy/README.md",
+    "deploy/backup.sh",
+    "deploy/restore-test.sh",
+    "deploy/verify-restore.sql",
+    "deploy/hashti-api.service",
+    "deploy/hashti-web.service",
+    "deploy/nginx.conf.example",
+    "deploy/env.example"
+  ],
+  "remaining_gates": [
+    "H27 prerequisite is still in progress",
+    "A real server/domain and TLS certificate are not available in this workspace",
+    "Local production build passed; build on target Linux release remains unwitnessed",
+    "Linux shell, Nginx and systemd validation must run on the target Linux host; local WSL invocation returned access denied",
+    "An actual backup/restore into a fresh temporary database, uploads file comparison, deployed health/readiness and operational log review remain to be witnessed",
+    "Backup retention, off-host encrypted copy and failure alerting require the target infrastructure"
+  ],
+  "warning": "One non-failing Starlette/httpx deprecation warning remains."
+}

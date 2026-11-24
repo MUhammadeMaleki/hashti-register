@@ -1,0 +1,17 @@
+{
+  "task": "H13",
+  "status": "passed_without_preview",
+  "checks": [
+    "34 backend tests passed on isolated real PostgreSQL schemas; Ruff passed",
+    "4 frontend tests passed; TypeScript typecheck passed",
+    "All attendance transitions, self-transitions, rejected return to pending, idempotent replay, and positive/free entry fees tested",
+    "Settlement and refund scenarios tested for absent_kept and absent_forfeited; rollback leaves attendance, charges, and wallet unchanged on failure",
+    "Assigned secretary can list event guests and change attendance; removed secretary cannot list or replay a prior change",
+    "Cancelled event and cancelled registration reject attendance changes"
+  ],
+  "limits": [
+    "No Uvicorn, frontend dev server, browser preview or production build run at user's request",
+    "ClickUp status update deferred because daily MCP call limit was reached"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

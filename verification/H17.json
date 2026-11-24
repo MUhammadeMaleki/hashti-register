@@ -1,0 +1,19 @@
+{
+  "task": "H17",
+  "status": "passed_without_preview",
+  "checks": [
+    "46 backend tests passed on isolated real PostgreSQL schemas; Ruff passed",
+    "4 frontend tests passed; TypeScript typecheck passed",
+    "Admin queue, status filtering, detail and private image access respect assigned-event and super-admin permissions",
+    "Approval atomically changes receipt status, appends one topup and increases only the guest wallet; event debt remains unsettled",
+    "Rejection keeps the receipt and optional reason without wallet or ledger effect; final states cannot transition again",
+    "Same-key approval/rejection replay returns the prior result; different-key repeat is rejected",
+    "Two independent concurrent approval sessions produce exactly one topup; revoked secretary assignment blocks replay",
+    "Origin, CSRF and Idempotency-Key guards verified on review mutation"
+  ],
+  "limits": [
+    "No Uvicorn, frontend dev server, browser preview or production build run at user's request",
+    "ClickUp status update deferred because daily MCP call limit was reached at last check"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

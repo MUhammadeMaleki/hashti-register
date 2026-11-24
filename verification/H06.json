@@ -1,0 +1,19 @@
+{
+  "task": "H06",
+  "status": "passed_with_browser_qa_limit",
+  "checks": [
+    "Next.js typecheck and production build passed for /, /login, /panel, /panel/users, /account and /change-password",
+    "Four frontend API/format tests passed: same-origin credentials, CSRF, refresh retry, error translation, Persian mobile/Jalali/toman formatting",
+    "HTTP smoke passed for Persian RTL page, login page, API liveness and real PostgreSQL readiness through same-origin Next.js proxy",
+    "Proxied invalid admin login returned expected 401 invalid_credentials from the real Backend",
+    "Protected shells load /api/auth/session and redirect mismatched roles; backend remains authoritative",
+    "No token is stored in localStorage"
+  ],
+  "limit": "Computer-use browser inventory was unavailable; interactive keyboard and mobile viewport QA was not possible in this environment.",
+  "remaining_in_later_tasks": [
+    "H07 implements event and location screens and APIs",
+    "Guest portal tasks populate account wallet, registration and payment sections",
+    "Run manual keyboard and mobile browser QA when an interactive browser is available"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

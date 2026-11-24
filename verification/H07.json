@@ -1,0 +1,23 @@
+{
+  "task": "H07",
+  "status": "passed_with_browser_qa_limit",
+  "checks": [
+    "19 backend tests passed against real isolated PostgreSQL 17 schemas; 2 event/location integration tests added",
+    "Concurrent creates with the same event number returned one 201 and one 409",
+    "Creator secretary was assigned automatically; unassigned secretary could not edit another event",
+    "Super admin could reassign an event while inactive secretary's historical assignment remained",
+    "Past dates and incomplete TBA events were accepted; incomplete exact events were rejected",
+    "Capacity was stored as soft metadata; two registration rows were allowed for capacity one",
+    "Changing a shared location updated both linked event views; a secretary without rights to all linked events was denied",
+    "Linked location and event with registration history could not be deleted; empty event and unlinked location could be deleted",
+    "Entry fee changes were blocked after registrations until financial adjustment logic is implemented",
+    "Event and location administration UI, Jalali date conversion, typecheck, four frontend tests, production build and HTTP smoke passed",
+    "Ruff and pip check passed"
+  ],
+  "limits": [
+    "Interactive browser and mobile visual QA were unavailable because computer-use reported no browser surface",
+    "Capacity behavior through public registration is deferred to the registration task; this task verifies the schema and administration side",
+    "Cancellation/reactivation are deferred to H18 because cancellation requires atomic financial reversals"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

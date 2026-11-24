@@ -1,0 +1,18 @@
+{
+  "task": "H16",
+  "status": "passed_without_preview",
+  "checks": [
+    "43 backend tests passed on isolated real PostgreSQL schemas; Ruff passed",
+    "4 frontend tests passed; TypeScript typecheck passed",
+    "Independent and event-linked receipt submission tested; event ownership, active registration and cancelled-event guards enforced",
+    "Code-only, image-only and code-plus-HEIC submissions tested; blank evidence and MIME/magic mismatch rejected",
+    "5MB limit, corrupt image rejection, HEIC decoding and private JPEG preview tested",
+    "Code-only image paths remain NULL; unauthorized image access returns 404; failed preview write removes original and rolls back database row",
+    "Submission remains pending and does not change wallet balance or append ledger transactions; approval belongs to H17"
+  ],
+  "limits": [
+    "No Uvicorn, frontend dev server, browser preview or production build run at user's request",
+    "ClickUp status update deferred because daily MCP call limit was reached at last check"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

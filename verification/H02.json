@@ -1,0 +1,65 @@
+{
+  "task": "H02",
+  "status": "passed",
+  "environment": {
+    "python": "3.11.0",
+    "node": "24.15.0",
+    "postgresql": "17",
+    "next": "16.4.6",
+    "fastapi": "0.165.0",
+    "sqlalchemy": "2.0.58",
+    "development_database": "hashti_dev",
+    "test_database": "hashti_test",
+    "postgres_bind": "127.0.0.1:55432"
+  },
+  "checks": [
+    {
+      "command": "python -m ruff check .",
+      "result": "passed"
+    },
+    {
+      "command": "python -m alembic upgrade head",
+      "database": "hashti_dev",
+      "result": "0001_bootstrap applied"
+    },
+    {
+      "command": "python -m alembic current",
+      "result": "0001_bootstrap (head)"
+    },
+    {
+      "command": "python -m pytest -q",
+      "result": "4 passed; real PostgreSQL test database migrated to head"
+    },
+    {
+      "command": "python -m pip check",
+      "result": "No broken requirements found"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/smoke.mjs",
+      "result": "passed: HTTP 200, Persian RTL HTML, API liveness, PostgreSQL readiness and same-origin proxy"
+    },
+    {
+      "command": "scripts/local-postgres.ps1 start (second invocation)",
+      "result": "passed: existing project cluster reused"
+    }
+  ],
+  "locks": [
+    "backend/requirements.txt",
+    "frontend/package-lock.json"
+  ],
+  "notes": [
+    "0001_bootstrap intentionally contains no domain tables; H03 owns domain models and constraints.",
+    "One upstream Starlette/httpx deprecation warning is non-blocking; compatibility remains tested.",
+    "The isolated PostgreSQL was started outside the sandbox under the desktop user. Its start/stop commands must run as that same user.",
+    "backend/.env and .local are ignored; database credentials were generated locally and not printed.",
+    "H01 completion and H02 updates remain queued for ClickUp because task operations still report the 100-call daily limit."
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "task": "H11",
+  "status": "passed_without_preview",
+  "checks": [
+    "25 backend tests passed on isolated PostgreSQL schemas; Ruff passed",
+    "Database migration rejects UPDATE and DELETE on wallet_transactions to keep the ledger append-only",
+    "Financial service calculates active charges, net active settlements and nonnegative debt, and rejects over-refund and over-settlement",
+    "Idempotency claim, effect and stored response commit atomically; same payload replays, changed payload conflicts, concurrent same-key requests create one effect, rollback leaves no successful record",
+    "Wallet transaction append updates cached balance in the same transaction and checks ledger equality, ownership and nonnegative balance",
+    "Super-admin read-only reconciliation endpoint reports cached-versus-ledger mismatch without repairing it"
+  ],
+  "limits": [
+    "Settlement, payment approval and manual-adjustment endpoints/UI belong to later tasks and must call these primitives",
+    "No Uvicorn, frontend dev server, browser preview or production build run at user's request",
+    "ClickUp status update deferred because daily MCP call limit was reached"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

@@ -1,0 +1,31 @@
+{
+  "task": "H26",
+  "status": "in_progress",
+  "checks": [
+    "All 75 Backend tests pass on isolated real PostgreSQL schemas; 4 Frontend tests, typecheck and Ruff pass",
+    "All 77 current /api/admin and /api/me routes have Backend authentication guards; every mutation also requires Origin and CSRF",
+    "Cross-role access, unassigned secretary, other guest, disabled staff session and old refresh token are rejected",
+    "Private receipt is available only to owner or authorized super admin and has private/no-store and nosniff headers; no public static upload route exists",
+    "Malformed HEIF, MIME mismatch, oversized receipt and conversion failure are rejected without persisting a payment or partial file",
+    "Refresh replay revokes active related sessions and records one security AuditLog entry",
+    "Temporary password expiry is enforced; password, refresh and CSRF tokens are absent from auth AuditLog and captured application logs",
+    "Readiness exception details are absent from response and warning log"
+  ],
+  "evidence": [
+    "backend/tests/test_security_review.py",
+    "backend/tests/test_auth.py",
+    "backend/tests/test_management.py",
+    "backend/tests/test_origin.py",
+    "backend/tests/test_payments.py",
+    "backend/tests/test_payment_review.py",
+    "backend/tests/test_public.py",
+    "backend/tests/test_health.py",
+    "backend/tests/test_guest_import.py",
+    "backend/tests/test_event_import.py"
+  ],
+  "limits": [
+    "Production build and visual preview remain deferred at the user's prior request; H24 is still in progress",
+    "Log assertions cover application warnings and Auth/Audit paths exercised in tests, not a deployed Nginx/systemd log pipeline",
+    "Deployment rate limiting and a broader penetration test remain outside this local test run"
+  ]
+}

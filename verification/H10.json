@@ -1,0 +1,17 @@
+{
+  "task": "H10",
+  "status": "passed_without_preview",
+  "checks": [
+    "23 backend tests passed on isolated PostgreSQL schemas, including public group and admin registration, normalized phone reuse, duplicate rejection, closed/cancelled event guards, assigned-secretary authorization and concurrent registration uniqueness",
+    "Four frontend tests, TypeScript typecheck and Ruff passed",
+    "Public event form accepts one or more independent people, shows per-person outcomes and retries only unsuccessful people",
+    "Event editor can add an existing or new contact while registration is open",
+    "Each newly registered person receives an independent profile, zero-balance wallet and active/pending registration; no login account, charge or settlement is created"
+  ],
+  "limits": [
+    "No Uvicorn, frontend dev server, browser preview or production build run at user's request",
+    "ClickUp status update deferred because daily MCP call limit was reached",
+    "Attendance changes, cancellation and reactivation belong to subsequent tasks"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

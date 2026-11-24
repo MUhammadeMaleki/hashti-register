@@ -1,0 +1,19 @@
+{
+  "task": "H15",
+  "status": "passed_without_preview",
+  "checks": [
+    "40 backend tests passed on isolated real PostgreSQL schemas; Ruff passed",
+    "4 frontend tests passed; TypeScript typecheck passed",
+    "Admin and guest partial/full settlement, idempotent replay, ownership, CSRF and cancelled event/registration guards tested",
+    "Manual positive/negative adjustments do not auto-settle; overdraw and blank explanation rejected; actor, time and note retained",
+    "Payment on behalf of another person changes only recipient wallet; payer wallet remains unchanged",
+    "Global and guest-specific debt ceiling warnings and independent event debts tested",
+    "Partial/full refunds link to original settlements; over-refund and duplicate refund rejected",
+    "Two concurrent settlements on separate sessions cannot consume the same debt or wallet balance twice"
+  ],
+  "limits": [
+    "No Uvicorn, frontend dev server, browser preview or production build run at user's request",
+    "ClickUp status update deferred because daily MCP call limit was reached at last check"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

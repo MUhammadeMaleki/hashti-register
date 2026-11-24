@@ -1,0 +1,28 @@
+{
+  "task": "H25",
+  "status": "in_progress",
+  "database": "isolated schemas on real PostgreSQL; two independent SQLAlchemy sessions per race",
+  "checks": [
+    "72 Backend tests passed; Ruff passed",
+    "All four new cross-operation race tests passed five consecutive runs and once after adding actor assertions",
+    "Settlement versus manual debit: only one spends the balance; ledger equals cached balance",
+    "Attendance change versus settlement: no residual debt or duplicate refund; refund links to original settlement",
+    "Order reduction versus manual refund: total refunds never exceed original settlement; debt stays nonnegative",
+    "Concurrent same-key settlements return the same result with one ledger row and one AuditLog",
+    "Existing concurrent double settlement and double payment approval tests strengthened with ledger and AuditLog assertions",
+    "Database constraints, event number collision and reconciliation covered by existing domain, event and finance tests"
+  ],
+  "evidence": [
+    "backend/tests/test_financial_races.py",
+    "backend/tests/test_settlements.py",
+    "backend/tests/test_payment_review.py",
+    "backend/tests/test_finance.py",
+    "backend/tests/test_domain.py",
+    "backend/tests/test_events.py"
+  ],
+  "limits": [
+    "Production build remains deferred at the user's prior request; H24 is not yet complete",
+    "Five repeated runs reduce but cannot eliminate concurrency scheduling risk",
+    "Starlette/httpx deprecation warning does not fail the test suite"
+  ]
+}

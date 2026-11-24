@@ -1,0 +1,32 @@
+{
+  "task": "H29",
+  "status": "in_progress",
+  "candidate_version": {
+    "backend": "0.1.0",
+    "frontend": "0.1.0",
+    "migration_head_in_code": "c41e9a7b2d10",
+    "release_tag": null,
+    "production_approved": false
+  },
+  "acceptance_audit": {
+    "product_criteria_total": 73,
+    "product_verified_by_existing_evidence": 38,
+    "product_implemented_pending_owner_review": 35,
+    "technical_criteria_verified": 17,
+    "criteria_with_missing_evidence_paths": 0,
+    "owner_reviewed_scenarios": 0
+  },
+  "checks": [
+    "Product journey and both Excel preview/import test modules: 6 tests passed on real PostgreSQL",
+    "Prior H28 full run: 78 Backend tests, 4 Frontend tests, typecheck and Ruff passed",
+    "No real .xlsx, .xls or .csv import sample was present in the workspace",
+    "Owner sign-off and controlled real-data import procedure documented in verification/H29-acceptance.md"
+  ],
+  "real_data_import_performed": false,
+  "remaining_gates": [
+    "H28 prerequisite and its upstream gates remain in progress",
+    "Owner must review the actual UI on demo data and record acceptance or defects for each scenario",
+    "A real sample file and explicit approval after its preview are required before import",
+    "Production build, deployed health/readiness and restore evidence are not yet available"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "task": "H18",
+  "status": "passed_with_local_runtime",
+  "checks": [
+    "50 backend tests passed on isolated real PostgreSQL schemas; Ruff passed",
+    "4 frontend tests passed; TypeScript typecheck passed",
+    "Event cancellation atomically cancels active registrations and charges and refunds linked settlements exactly once",
+    "A forced wallet-ledger failure on the second guest rolls back the first guest, event flag, charges, refunds and audit",
+    "Same-key retries return the original response; further cancellation/reactivation requests have no side effects",
+    "Event reactivation preserves registration open/closed status, cancelled registrations and historical charges, settlements and refunds",
+    "Registration reactivation requires an open, noncancelled event, reuses the same record and resets attendance to pending without charges or settlement",
+    "Pending attendance rejects orders; subsequent present creates a new positive entry only when the current fee is positive",
+    "Free-event reactivation and attendance create no zero-valued entry",
+    "Origin, CSRF and Idempotency-Key guards tested",
+    "Uvicorn and Next.js dev server started on 127.0.0.1:8000 and :3000; smoke test passed for Persian RTL page, API, PostgreSQL readiness and same-origin proxy",
+    "GET /, /login, /panel/events/new, /panel/events/1 and /panel/payments returned HTTP 200"
+  ],
+  "limits": [
+    "ClickUp status update deferred because daily MCP call limit was reached at last check",
+    "Development database currently has no admin account, event or guest; no demo records were inserted"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

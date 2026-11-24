@@ -1,0 +1,24 @@
+{
+  "task": "H03",
+  "status": "passed",
+  "migration": "b30ce05cd3ac_domain_schema",
+  "domain_tables": 18,
+  "checks": [
+    "Alembic upgrade head succeeded on the isolated development PostgreSQL database",
+    "Empty PostgreSQL schema upgraded to head inside a rolled-back test transaction",
+    "Alembic check detected no model/schema drift",
+    "Real PostgreSQL constraints rejected duplicate guest wallet and registration, invalid phone, negative charge and event fee, invalid wallet transaction sign, missing receipt evidence, incomplete receipt image pair, duplicate receipt topup, refund without original settlement, and negative default debt ceiling",
+    "Foreign-key RESTRICT prevented guest deletion with a wallet",
+    "Guest and zero-balance wallet were created atomically; simulated wallet failure rolled back the guest",
+    "Super-admin bootstrap stored an Argon2id hash; optional demo seed was idempotent",
+    "10 backend tests passed",
+    "Ruff passed",
+    "pip check passed"
+  ],
+  "limitations": [
+    "A profile created outside the guest service can still lack a wallet; all product write paths must use the atomic service",
+    "Cross-row financial invariants, registration transition rules, and pending-attendance order prohibition belong to later services",
+    "No real administrator or demo record was seeded into development; the explicit interactive seed command is documented in README.md",
+    "ClickUp task status and description await the daily MCP quota reset"
+  ]
+}

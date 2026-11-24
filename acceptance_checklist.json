@@ -1,0 +1,1442 @@
+{
+  "name": "چک‌لیست پذیرش نسخه اول هشتی",
+  "task": "H01",
+  "task_url": "https://app.clickup.com/t/1amp9grjvh7",
+  "sources": [
+    "Hashti_PRD_v1.3.md §۱۸ و §۱۹",
+    "tech_design.md §§۶،۸،۹،۱۲–۱۵"
+  ],
+  "status": "baseline_confirmed",
+  "note": "این فایل معیارها را تثبیت و به تسک‌ها وصل می‌کند؛ هیچ قابلیت یا تست اجرایی هنوز انجام‌شده تلقی نمی‌شود. معیارهای H01 بررسی سندی‌اند و نیازمند ساخت UI نیستند.",
+  "confirmed_decisions": [
+    {
+      "id": "PD-01",
+      "decision": "ثبت سفارش جدید برای attendance=pending ممنوع است.",
+      "source": "پاسخ صریح مالک محصول در گفتگو",
+      "tasks": [
+        "H14"
+      ]
+    },
+    {
+      "id": "PD-02",
+      "decision": "فعال‌سازی مجدد خود رویداد لغوشده مجاز است.",
+      "source": "پاسخ صریح مالک محصول در گفتگو",
+      "tasks": [
+        "H18"
+      ]
+    },
+    {
+      "id": "PD-03",
+      "decision": "فعال‌سازی مجدد رویداد فقط خود رویداد را فعال می‌کند؛ ثبت‌نام‌ها جداگانه طبق بخش ۸ فعال می‌شوند و هزینه‌ها، تسویه‌ها و برگشت‌های قبلی خودکار بازگردانده نمی‌شوند.",
+      "source": "تأیید صریح مالک محصول: «موافقم» در پاسخ به پیشنهاد H01",
+      "tasks": [
+        "H18"
+      ]
+    }
+  ],
+  "open_decisions": [],
+  "release_gates": [
+    "هر ۷۳ معیار محصول و ۱۷ گروه تست فنی شاهد قبولی داشته باشند؛ گروه‌های فنی باید به تست‌های جزئی شکسته شوند.",
+    "تمام تست‌های مالی و دسترسی روی PostgreSQL واقعی موفق باشند؛ build و سناریوی یکپارچه موفق باشند.",
+    "موجودی دفتر با wallets.balance برابر، بدهی نامنفی و برگشت حداکثر تسویه فعال باشد؛ تاریخچه مالی حفظ شود.",
+    "بکاپ و بازیابی آزمایشی موفق، اشکال بحرانی/شدید باز صفر و پذیرش مالک محصول پیش از انتشار ثبت شود."
+  ],
+  "criteria": [
+    {
+      "id": "AC-001",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت کاربران",
+      "requirement": "ایجاد دبیر با نام کاربری و رمز عبور.",
+      "implementation_tasks": [
+        "H04",
+        "H06"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvha",
+        "https://app.clickup.com/t/1amp9grjvhc"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_management.py"]
+    },
+    {
+      "id": "AC-002",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت کاربران",
+      "requirement": "غیرفعال کردن دبیر بدون حذف سوابق.",
+      "implementation_tasks": [
+        "H05"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhb"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_management.py"]
+    },
+    {
+      "id": "AC-003",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت کاربران",
+      "requirement": "اختصاص چند دبیر به یک رویداد.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_events.py"]
+    },
+    {
+      "id": "AC-004",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت کاربران",
+      "requirement": "جایگزینی دبیر توسط مدیر هشتی.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_events.py"]
+    },
+    {
+      "id": "AC-005",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت کاربران",
+      "requirement": "ایجاد حساب کاربری ورود مهمان به‌صورت مستقل از ثبت‌نام، با شماره موبایل و رمز عبور انتخابی، بدون OTP و بدون تأیید دستی یا مستقل مالکیت شماره.",
+      "implementation_tasks": [
+        "H04",
+        "H06"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvha",
+        "https://app.clickup.com/t/1amp9grjvhc"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_auth.py"]
+    },
+    {
+      "id": "AC-006",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت کاربران",
+      "requirement": "اتصال حساب ورود به پروفایل موجود مخاطب بر اساس شماره موبایل؛ در نبود پروفایل، ساخت اتمیک پروفایل و کیف پول با موجودی صفر و اتصال حساب به آن، بدون ایجاد ثبت‌نام رویداد.",
+      "implementation_tasks": [
+        "H04",
+        "H06"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvha",
+        "https://app.clickup.com/t/1amp9grjvhc"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_auth.py"]
+    },
+    {
+      "id": "AC-007",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت کاربران",
+      "requirement": "امکان صدور رمز موقت توسط ادمین و تعیین رمز جدید توسط مخاطب پس از ورود.",
+      "implementation_tasks": [
+        "H04",
+        "H06"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvha",
+        "https://app.clickup.com/t/1amp9grjvhc"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_auth.py"]
+    },
+    {
+      "id": "AC-008",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "ایجاد رویداد جدید.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_events.py"]
+    },
+    {
+      "id": "AC-009",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "شماره‌گذاری خودکار و امکان تغییر شماره.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_events.py"]
+    },
+    {
+      "id": "AC-010",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "انتخاب مکان ذخیره‌شده و ثبت مکان جدید.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_events.py"]
+    },
+    {
+      "id": "AC-011",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "ثبت پوستر و توضیحات.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_public.py","backend/tests/test_events.py"]
+    },
+    {
+      "id": "AC-012",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "تعیین زمان و مکان دقیق یا تقریبی.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_events.py"]
+    },
+    {
+      "id": "AC-013",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "تعیین هزینه ورودی.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_events.py"]
+    },
+    {
+      "id": "AC-014",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "باز و بسته کردن ثبت‌نام.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_events.py","backend/tests/test_registrations.py"]
+    },
+    {
+      "id": "AC-015",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "جلوگیری از ثبت‌نام یا افزودن مخاطب در رویداد بسته.",
+      "implementation_tasks": [
+        "H10"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhg"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H10.json"]
+    },
+    {
+      "id": "AC-016",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "امکان فعال‌سازی مجدد ثبت‌نام قبلی از طریق باز کردن موقت رویداد، فعال‌سازی ثبت‌نام و بستن دوباره رویداد.",
+      "implementation_tasks": [
+        "H18"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhr"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_cancellations.py"]
+    },
+    {
+      "id": "AC-017",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "ثبت رویداد با تاریخ گذشته.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_events.py"]
+    },
+    {
+      "id": "AC-018",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "وارد کردن گروهی رویدادها از Excel.",
+      "implementation_tasks": [
+        "H23"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhx"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_event_import.py"]
+    },
+    {
+      "id": "AC-019",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "عدم نمایش عمومی رویداد لغوشده و حفظ آن در پنل مدیریت.",
+      "implementation_tasks": [
+        "H08",
+        "H18"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhe",
+        "https://app.clickup.com/t/1amp9grjvhr"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H08.json", "verification/H18.json"]
+    },
+    {
+      "id": "AC-020",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "امکان فعال‌سازی مجدد رویداد لغوشده بدون فعال‌سازی خودکار ثبت‌نام‌ها یا بازگرداندن هزینه‌ها و تسویه‌های قبلی؛ ثبت‌نام‌ها جداگانه فعال می‌شوند.",
+      "implementation_tasks": [
+        "H18"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhr"
+      ],
+      "verification": "پس از فعال‌سازی رویداد، ثبت‌نام‌های قبلی cancelled و chargeهای قبلی لغوشده بمانند؛ هیچ تراکنش جدید یا تغییر مانده ایجاد نشود. فعال‌سازی جداگانه ثبت‌نام فقط در رویداد باز و لغونشده به pending انجام شود؛ وضعیت باز/بسته رویداد با فعال‌سازی خود رویداد تغییر نکند.",
+      "status": "verified",
+      "evidence": ["verification/H18.json"]
+    },
+    {
+      "id": "AC-021",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "به‌روزرسانی رویدادهای متصل در صورت اصلاح نام یا آدرس مکان ذخیره‌شده.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["verification/H07.json", "backend/tests/test_events.py"]
+    },
+    {
+      "id": "AC-022",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت رویدادها",
+      "requirement": "ایجاد رکورد مکان جدید هنگام جابه‌جایی فیزیکی و حفظ ارتباط رویدادهای قبلی با مکان قبلی.",
+      "implementation_tasks": [
+        "H07"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhd"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_events.py"]
+    },
+    {
+      "id": "AC-023",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "ثبت دستی مخاطب بدون انتخاب رویداد و بدون ایجاد ثبت‌نام.",
+      "implementation_tasks": [
+        "H10"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhg"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H09.json"]
+    },
+    {
+      "id": "AC-024",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "ورود گروهی حدود ۱۰۰۰ مخاطب از اکسل بدون اتصال به رویداد.",
+      "implementation_tasks": [
+        "H22"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhw"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_guest_import.py"]
+    },
+    {
+      "id": "AC-025",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "جست‌وجوی سراسری مخاطب بر اساس نام، نام خانوادگی یا شماره موبایل.",
+      "implementation_tasks": [
+        "H09"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhf"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H09.json"]
+    },
+    {
+      "id": "AC-026",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "شناسایی مخاطب قبلی با شماره موبایل و جلوگیری از ایجاد پروفایل تکراری.",
+      "implementation_tasks": [
+        "H09"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhf"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H09.json"]
+    },
+    {
+      "id": "AC-027",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "افزودن مخاطب موجود به رویداد با اتصال همان پروفایل.",
+      "implementation_tasks": [
+        "H10"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhg"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H10.json"]
+    },
+    {
+      "id": "AC-028",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "ایجاد مخاطب جدید هنگام افزودن به رویداد، سپس ایجاد ثبت‌نام.",
+      "implementation_tasks": [
+        "H10"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhg"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H10.json"]
+    },
+    {
+      "id": "AC-029",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "ثبت‌نام عمومی و ثبت‌نام گروهی.",
+      "implementation_tasks": [
+        "H10"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhg"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H10.json"]
+    },
+    {
+      "id": "AC-030",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "ایجاد پروفایل، ثبت‌نام و حساب مالی مستقل برای هر فرد در ثبت‌نام گروهی.",
+      "implementation_tasks": [
+        "H10"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhg"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H10.json"]
+    },
+    {
+      "id": "AC-031",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "عدم ایجاد خودکار حساب کاربری ورود برای افراد ثبت‌نام‌شده در ثبت‌نام گروهی.",
+      "implementation_tasks": [
+        "H10"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhg"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H10.json"]
+    },
+    {
+      "id": "AC-032",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "ویرایش اطلاعات مخاطب و تکمیل اطلاعات اختیاری پروفایل.",
+      "implementation_tasks": [
+        "H09"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhf"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H09.json"]
+    },
+    {
+      "id": "AC-033",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "مشاهده تاریخچه ثبت‌نام‌ها و حضور هر مخاطب.",
+      "implementation_tasks": [
+        "H09"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhf"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H09.json"]
+    },
+    {
+      "id": "AC-034",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "حفظ یکتایی شماره موبایل نرمال‌شده و جلوگیری از ساخت پروفایل تکراری، بدون قابلیت ادغام پروفایل‌ها در نسخه اول.",
+      "implementation_tasks": [
+        "H09"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhf"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H09.json"]
+    },
+    {
+      "id": "AC-035",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت بانک مخاطبان و ثبت‌نام",
+      "requirement": "حفظ پروفایل و کیف پول مخاطب پس از لغو اولین یا تنها ثبت‌نام.",
+      "implementation_tasks": [
+        "H18"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhr"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_cancellations.py"]
+    },
+    {
+      "id": "AC-036",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت حضور",
+      "requirement": "ثبت وضعیت حاضر.",
+      "implementation_tasks": [
+        "H13"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhk"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H13.json"]
+    },
+    {
+      "id": "AC-037",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت حضور",
+      "requirement": "ثبت غایب با حفظ اعتبار.",
+      "implementation_tasks": [
+        "H13"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhk"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H13.json"]
+    },
+    {
+      "id": "AC-038",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت حضور",
+      "requirement": "ثبت غایب با سوخت اعتبار.",
+      "implementation_tasks": [
+        "H13"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhk"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H13.json"]
+    },
+    {
+      "id": "AC-039",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت حضور",
+      "requirement": "اصلاح وضعیت حضور.",
+      "implementation_tasks": [
+        "H13"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhk"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H13.json"]
+    },
+    {
+      "id": "AC-040",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت حضور",
+      "requirement": "محاسبه صحیح اثر مالی هر تغییر.",
+      "implementation_tasks": [
+        "H13"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhk"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H13.json"]
+    },
+    {
+      "id": "AC-041",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "ایجاد کیف پول دائمی مستقل برای هر مخاطب.",
+      "implementation_tasks": [
+        "H03",
+        "H11"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvh9",
+        "https://app.clickup.com/t/1amp9grjvhh"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H09.json", "verification/H11.json"]
+    },
+    {
+      "id": "AC-042",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "ثبت شارژ با کارت‌به‌کارت.",
+      "implementation_tasks": [
+        "H16",
+        "H17"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhp",
+        "https://app.clickup.com/t/1amp9grjvhq"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_payments.py","backend/tests/test_payment_review.py"]
+    },
+    {
+      "id": "AC-043",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "ثبت تصویر رسید یا کد پیگیری.",
+      "implementation_tasks": [
+        "H16",
+        "H17"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhp",
+        "https://app.clickup.com/t/1amp9grjvhq"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_payments.py"]
+    },
+    {
+      "id": "AC-044",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "تأیید و رد رسید.",
+      "implementation_tasks": [
+        "H17"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhq"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_payment_review.py"]
+    },
+    {
+      "id": "AC-045",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "ثبت چند پرداخت مستقل.",
+      "implementation_tasks": [
+        "H17"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhq"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_payments.py"]
+    },
+    {
+      "id": "AC-046",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "ثبت هزینه ورودی و چند ردیف سفارش.",
+      "implementation_tasks": [
+        "H13",
+        "H14"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhk",
+        "https://app.clickup.com/t/1amp9grjvhm"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H13.json", "verification/H14.json"]
+    },
+    {
+      "id": "AC-047",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "جلوگیری از ثبت سفارش برای مهمان با وضعیت حضور `pending`.",
+      "implementation_tasks": [
+        "H13",
+        "H14"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhk",
+        "https://app.clickup.com/t/1amp9grjvhm"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H14.json"]
+    },
+    {
+      "id": "AC-048",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "ویرایش هزینه‌ها.",
+      "implementation_tasks": [
+        "H13",
+        "H14"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhk",
+        "https://app.clickup.com/t/1amp9grjvhm"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H14.json"]
+    },
+    {
+      "id": "AC-049",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "تسویه کامل و جزئی از کیف پول.",
+      "implementation_tasks": [
+        "H15"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhn"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H15.json"]
+    },
+    {
+      "id": "AC-050",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "نگهداری بدهی مستقل هر رویداد.",
+      "implementation_tasks": [
+        "H15"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhn"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H15.json"]
+    },
+    {
+      "id": "AC-051",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "اعمال سقف بدهی عمومی و اختصاصی.",
+      "implementation_tasks": [
+        "H15"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhn"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H15.json"]
+    },
+    {
+      "id": "AC-052",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "اصلاح دستی موجودی توسط تمام دبیران فعال و مدیر هشتی با ثبت مبلغ، نوع افزایش/کاهش، توضیح، ثبت‌کننده و زمان.",
+      "implementation_tasks": [
+        "H15"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhn"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H15.json"]
+    },
+    {
+      "id": "AC-053",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "افزایش اعتبار مخاطب دریافت‌کننده در سناریوی پرداخت هزینه توسط شخص دیگر، صرفاً با اصلاح دستی کیف پول و ثبت توضیح، بدون تغییر حساب پرداخت‌کننده یا ایجاد ارتباط مالی بین دو مخاطب.",
+      "implementation_tasks": [
+        "H15"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhn"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H15.json"]
+    },
+    {
+      "id": "AC-054",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "لغو هزینه ورودی و سفارش‌های مرتبط هنگام لغو ثبت‌نام یا رویداد.",
+      "implementation_tasks": [
+        "H18"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhr"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H18.json"]
+    },
+    {
+      "id": "AC-055",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "بازگشت مبالغ تخصیص‌یافته به کیف پول در زمان لغو و ثبت کاهش دستی اعتبار در صورت استرداد واقعی وجه خارج از سامانه.",
+      "implementation_tasks": [
+        "H18"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhr"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H15.json", "verification/H18.json"]
+    },
+    {
+      "id": "AC-056",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "حفظ کامل تاریخچه تراکنش‌ها، اصلاحات و لغوها.",
+      "implementation_tasks": [
+        "H18"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhr"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H18.json"]
+    },
+    {
+      "id": "AC-057",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "مدیریت مالی",
+      "requirement": "مشاهده تاریخچه مالی توسط مخاطب و مدیریت.",
+      "implementation_tasks": [
+        "H11",
+        "H19"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhh",
+        "https://app.clickup.com/t/1amp9grjvht"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_guest_portal.py","backend/tests/test_guests.py"]
+    },
+    {
+      "id": "AC-058",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "گزارش‌گیری",
+      "requirement": "داشبورد کلی.",
+      "implementation_tasks": [
+        "H20"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhu"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_reports.py"]
+    },
+    {
+      "id": "AC-059",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "گزارش‌گیری",
+      "requirement": "گزارش مالی رویداد.",
+      "implementation_tasks": [
+        "H20"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhu"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_reports.py"]
+    },
+    {
+      "id": "AC-060",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "گزارش‌گیری",
+      "requirement": "گزارش بدهکاران.",
+      "implementation_tasks": [
+        "H20"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhu"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_reports.py"]
+    },
+    {
+      "id": "AC-061",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "گزارش‌گیری",
+      "requirement": "گزارش کیف پول مخاطبان.",
+      "implementation_tasks": [
+        "H20"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhu"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_reports.py"]
+    },
+    {
+      "id": "AC-062",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "گزارش‌گیری",
+      "requirement": "گزارش تعداد دفعات حضور.",
+      "implementation_tasks": [
+        "H20"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhu"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_reports.py"]
+    },
+    {
+      "id": "AC-063",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "گزارش‌گیری",
+      "requirement": "گزارش تعداد کل مخاطبان، مخاطبان بدون سابقه حضور و مخاطبان دارای سابقه حضور.",
+      "implementation_tasks": [
+        "H20"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhu"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_reports.py"]
+    },
+    {
+      "id": "AC-064",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "گزارش‌گیری",
+      "requirement": "نمودارهای آماری.",
+      "implementation_tasks": [
+        "H20"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhu"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_reports.py"]
+    },
+    {
+      "id": "AC-065",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "گزارش‌گیری",
+      "requirement": "فیلتر گزارش‌ها.",
+      "implementation_tasks": [
+        "H20"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhu"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_reports.py"]
+    },
+    {
+      "id": "AC-066",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "گزارش‌گیری",
+      "requirement": "خروجی Excel مطابق فیلترهای اعمال‌شده.",
+      "implementation_tasks": [
+        "H21"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhv"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "implemented",
+      "evidence": ["backend/tests/test_reports.py"]
+    },
+    {
+      "id": "AC-067",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "صفحه عمومی",
+      "requirement": "نمایش رویدادهای پیش‌رو و آرشیو رویدادهای گذشته.",
+      "implementation_tasks": [
+        "H08"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhe"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H08.json"]
+    },
+    {
+      "id": "AC-068",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "صفحه عمومی",
+      "requirement": "نمایش صفحه اختصاصی رویداد.",
+      "implementation_tasks": [
+        "H08"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhe"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H08.json"]
+    },
+    {
+      "id": "AC-069",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "صفحه عمومی",
+      "requirement": "نمایش پوستر و توضیحات، یادداشت عمومی، هزینه ورودی و لینک نقشه.",
+      "implementation_tasks": [
+        "H08"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhe"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H08.json"]
+    },
+    {
+      "id": "AC-070",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "صفحه عمومی",
+      "requirement": "نمایش لینک تلگرام و بله.",
+      "implementation_tasks": [
+        "H08"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhe"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H08.json"]
+    },
+    {
+      "id": "AC-071",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "صفحه عمومی",
+      "requirement": "امکان ثبت‌نام مهمان‌ها.",
+      "implementation_tasks": [
+        "H10"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhg"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H10.json"]
+    },
+    {
+      "id": "AC-072",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "صفحه عمومی",
+      "requirement": "عدم نمایش اسامی و تعداد شرکت‌کنندگان به عموم.",
+      "implementation_tasks": [
+        "H08"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhe"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H08.json"]
+    },
+    {
+      "id": "AC-073",
+      "source": "Hashti_PRD_v1.3.md §۱۹",
+      "group": "صفحه عمومی",
+      "requirement": "عدم نمایش رویدادهای لغوشده در صفحه عمومی.",
+      "implementation_tasks": [
+        "H08"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhe"
+      ],
+      "verification": "نمایش سناریوی واقعی و آزمون مرتبط؛ نتیجه و مسیر شاهد هنگام پیاده‌سازی ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H08.json"]
+    },
+    {
+      "id": "TC-001",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "قواعد تجاری",
+      "requirement": "ساخت پروفایل و کیف پول اتمیک، ثبت‌نام بدون هزینه، عدم تسویه خودکار پس از شارژ/اصلاح دستی",
+      "implementation_tasks": [
+        "H03",
+        "H10",
+        "H11"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvh9",
+        "https://app.clickup.com/t/1amp9grjvhg",
+        "https://app.clickup.com/t/1amp9grjvhh"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["backend/tests/test_registrations.py", "backend/tests/test_guests.py", "backend/tests/test_settlements.py", "backend/tests/test_payment_review.py", "verification/H27.json"]
+    },
+    {
+      "id": "TC-002",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "ماشین حالت حضور",
+      "requirement": "همه گذارهای مجاز جدول ۶.۲، رد گذار به `pending`، self-transition، عدم ساخت entry/refund تکراری؛ تکرار همه گذارها با `entry_fee=0` و اثبات عدم ساخت یا باقی‌ماندن entry صفر",
+      "implementation_tasks": [
+        "H13"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhk"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H13.json"]
+    },
+    {
+      "id": "TC-003",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "بدهی",
+      "requirement": "محاسبه charge فعال، تسویه فعال، بدهی کامل/جزئی، بدهی ورودی صفر در رویداد رایگان و استقلال رویدادها",
+      "implementation_tasks": [
+        "H11",
+        "H15"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhh",
+        "https://app.clickup.com/t/1amp9grjvhn"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H13.json", "verification/H15.json"]
+    },
+    {
+      "id": "TC-004",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "تسویه",
+      "requirement": "کامل، جزئی، مبلغ بیش از بدهی/موجودی، موجودی نامنفی و ثبت‌نام لغوشده",
+      "implementation_tasks": [
+        "H15"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhn"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H15.json"]
+    },
+    {
+      "id": "TC-005",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "لغو",
+      "requirement": "لغو ثبت‌نام از هر حضور، لغو رویداد، لغو همه chargeها و برگشت دقیقاً یک‌بار",
+      "implementation_tasks": [
+        "H18"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhr"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H18.json"]
+    },
+    {
+      "id": "TC-006",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "فعال‌سازی",
+      "requirement": "رویداد باز، مسیر بازکردن/فعال‌سازی/بستن، رد در رویداد بسته، `attendance=pending` و حفظ تاریخچه؛ عدم ساخت entry در رویداد رایگان",
+      "implementation_tasks": [
+        "H18"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhr"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H18.json"]
+    },
+    {
+      "id": "TC-007",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "برگشت",
+      "requirement": "کامل/جزئی، چند settlement، جلوگیری از برگشت دوباره و برگشت بیش از مبلغ اصلی",
+      "implementation_tasks": [
+        "H15"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhn"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H15.json"]
+    },
+    {
+      "id": "TC-008",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "ویرایش هزینه",
+      "requirement": "افزایش/کاهش پیش و پس از تسویه، لغو سفارش، تغییر انبوه entry و refund مازاد؛ گذارهای مثبت→صفر، صفر→مثبت و صفر→صفر با کنترل لغو/ساخت entry و عدم وجود charge صفر",
+      "implementation_tasks": [
+        "H14"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhm"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H14.json"]
+    },
+    {
+      "id": "TC-009",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "رسید",
+      "requirement": "ثبت مستقل/رویداد، مجوز event_id، تأیید، رد و تأیید تکراری؛ رسید فقط با تصویر، فقط با کد پیگیری، با هر دو، رد درخواست فاقد هر دو یا با کد خالی، NULL بودن مسیرها در نبود تصویر و عدم شارژ دوباره",
+      "implementation_tasks": [
+        "H16",
+        "H17"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhp",
+        "https://app.clickup.com/t/1amp9grjvhq"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H16.json", "verification/H17.json"]
+    },
+    {
+      "id": "TC-010",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "هم‌زمانی",
+      "requirement": "دو تسویه، تسویه و اصلاح کاهشی، دو approve، تغییر حضور و تسویه، ویرایش هزینه و refund",
+      "implementation_tasks": [
+        "H25"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhz"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H25.json"]
+    },
+    {
+      "id": "TC-011",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "Idempotency",
+      "requirement": "retry با همان payload، تعارض payload متفاوت، درخواست هم‌زمان با کلید یکسان و عدم اثر مالی دوم",
+      "implementation_tasks": [
+        "H11",
+        "H25"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhh",
+        "https://app.clickup.com/t/1amp9grjvhz"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H11.json", "verification/H25.json"]
+    },
+    {
+      "id": "TC-012",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "دیتابیس",
+      "requirement": "قیود یکتا و CHECK از جمله `amount > 0` و CHECK مدرک رسید، FKهای RESTRICT، شماره رویداد هم‌زمان و reconciliation موجودی/دفتر",
+      "implementation_tasks": [
+        "H03",
+        "H25"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvh9",
+        "https://app.clickup.com/t/1amp9grjvhz"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H03.json", "verification/H25.json"]
+    },
+    {
+      "id": "TC-013",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "ثبت‌نام",
+      "requirement": "تکراری، گروهی، موبایل نرمال، رویداد بسته و رویداد لغوشده",
+      "implementation_tasks": [
+        "H10",
+        "H12"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhg",
+        "https://app.clickup.com/t/1amp9grjvhj"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H10.json", "verification/H12.json"]
+    },
+    {
+      "id": "TC-014",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "مجوز",
+      "requirement": "دبیر رویداد خود/دیگر، مدیر هشتی، مهمان روی منابع خود/دیگر و کاربر غیرفعال",
+      "implementation_tasks": [
+        "H05",
+        "H26"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhb",
+        "https://app.clickup.com/t/1amp9grjvj0"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H05.json", "verification/H26.json"]
+    },
+    {
+      "id": "TC-015",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "حساب مهمان",
+      "requirement": "ساخت بدون OTP، استفاده از پروفایل قبلی، ساخت اتمیک پروفایل و کیف پول صفر برای شماره جدید، اتصال حساب، عدم ایجاد registration، rollback در شکست، جلوگیری از حساب/پروفایل/کیف پول تکراری در حالت عادی و هم‌زمان و رمز موقت منقضی/یک‌بارمصرف",
+      "implementation_tasks": [
+        "H04",
+        "H26"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvha",
+        "https://app.clickup.com/t/1amp9grjvj0"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H04.json", "verification/H26.json"]
+    },
+    {
+      "id": "TC-016",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "Excel",
+      "requirement": "فایل معتبر، ردیف نامعتبر، موبایل تکراری، پیش‌نمایش/تأیید و عدم باقی‌ماندن داده ناقص",
+      "implementation_tasks": [
+        "H22",
+        "H23"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhw",
+        "https://app.clickup.com/t/1amp9grjvhx"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["backend/tests/test_guest_import.py", "backend/tests/test_event_import.py"]
+    },
+    {
+      "id": "TC-017",
+      "source": "tech_design.md §۱۴.۲",
+      "group": "فایل",
+      "requirement": "حجم/نوع نامعتبر، HEIC معتبر، شکست تبدیل و کنترل دسترسی به رسید خصوصی؛ `404` برای درخواست تصویر رسیدی که فقط کد پیگیری دارد",
+      "implementation_tasks": [
+        "H16",
+        "H26"
+      ],
+      "task_urls": [
+        "https://app.clickup.com/t/1amp9grjvhp",
+        "https://app.clickup.com/t/1amp9grjvj0"
+      ],
+      "verification": "pytest روی PostgreSQL واقعی؛ برای هم‌زمانی دو session مستقل. نتیجه، نام تست و مسیر شاهد ثبت شود.",
+      "status": "verified",
+      "evidence": ["verification/H16.json", "verification/H26.json"]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "task": "H14",
+  "status": "passed_without_preview",
+  "checks": [
+    "36 backend tests passed on isolated real PostgreSQL schemas; Ruff passed",
+    "4 frontend tests passed; TypeScript typecheck passed",
+    "Direct API order creation on pending attendance rejected; multiple orders, editing, cancellation and idempotent replay tested",
+    "Cancelled orders cannot be edited or reactivated; surplus settlement refund follows newest original and leaves nonnegative debt",
+    "Event-wide fee changes tested for positive-to-positive increase/decrease, positive-to-zero, zero-to-positive and zero-to-zero; historical entries stay cancelled and positive",
+    "Atomic rollback on wallet-ledger mismatch and cancelled-event guards tested"
+  ],
+  "limits": [
+    "No Uvicorn, frontend dev server, browser preview or production build run at user's request",
+    "ClickUp status update deferred because daily MCP call limit remains exhausted"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

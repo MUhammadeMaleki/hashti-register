@@ -1,0 +1,19 @@
+{
+  "task": "H08",
+  "status": "passed_with_browser_qa_limit",
+  "checks": [
+    "20 backend tests passed on isolated PostgreSQL schemas, including public event, poster, cancelled access and settings tests",
+    "Public event JSON excludes secretaries, capacity and participant names/counts",
+    "Cancelled event returns 404 from public detail and poster endpoints and is absent from catalogue",
+    "Invalid image content and MIME mismatch rejected; valid PNG and HEIF converted to JPEG previews",
+    "Upcoming, archive, detail and optional poster UI implemented in Persian RTL",
+    "Four frontend tests, TypeScript, Ruff and local HTTP smoke passed"
+  ],
+  "limits": [
+    "Registration action belongs to H10 and remains disabled until that task",
+    "Support and bank values appear when configured in admin settings; settings UI belongs to a later task",
+    "Interactive browser QA unavailable because no browser surface is connected",
+    "Production build not run at user's request"
+  ],
+  "clickup_sync": "pending_invalid_argument_from_clickup_update_task"
+}

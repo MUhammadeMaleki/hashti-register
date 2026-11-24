@@ -1,0 +1,35 @@
+{
+  "task": "H30",
+  "status": "in_progress",
+  "release_state": "not_deployed_not_approved",
+  "candidate_version": "0.1.0",
+  "migration_head_in_code": "c41e9a7b2d10",
+  "final_fix": [
+    "Super-admin panel now creates and enables/disables secretary accounts through existing guarded APIs",
+    "Guest profile panel now issues a one-time temporary password for an existing account through the existing guarded API"
+  ],
+  "checks": [
+    "Frontend typecheck and all 4 Frontend tests passed after UI changes",
+    "7 targeted Backend auth/management tests passed on PostgreSQL",
+    "Prior H28 full suite: 78 Backend tests passed, Ruff passed",
+    "Current production Next.js build passed; current full suite: 78 Backend tests, 4 Frontend tests, typecheck and Ruff passed",
+    "Local development database upgraded to migration head; same-origin smoke and public route checks passed; private API returned 401 without session",
+    "Operator guide and honest release handoff/gate report prepared"
+  ],
+  "evidence": [
+    "frontend/src/components/users-list.tsx",
+    "frontend/src/components/guests/guest-profile.tsx",
+    "frontend/src/lib/api.ts",
+    "docs/operator-guide.md",
+    "verification/H30-handoff.md",
+    "deploy/README.md",
+    "verification/H29-acceptance.md"
+  ],
+  "not_performed": [
+    "Visual preview (deferred at owner's earlier request)",
+    "Owner acceptance or explicit release approval",
+    "Deployment, service restart, target smoke test and production log review",
+    "Actual backup/restore and real-data import"
+  ],
+  "blocking_prerequisite": "H29 remains in progress, with upstream H24-H28 gates open"
+}

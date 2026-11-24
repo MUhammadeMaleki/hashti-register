@@ -1,0 +1,20 @@
+{
+  "task": "H05",
+  "status": "passed",
+  "checks": [
+    "17 backend tests passed against isolated real PostgreSQL 17 schemas",
+    "Super-admin-only secretary creation, listing, update, activation and deactivation enforced",
+    "Deactivation revoked sessions and prevented login while preserving the user and historical event assignment",
+    "Event assignment denied an unassigned secretary and allowed assigned secretary and super admin",
+    "Guest ownership denied cross-guest registration, payment and wallet access with 404",
+    "Super-admin-only settings validated nonnegative debt ceiling and stored organization/support configuration",
+    "Mutation endpoints required same-origin and CSRF checks",
+    "Ruff passed"
+  ],
+  "remaining_in_later_tasks": [
+    "H07 wires the event-secretary guard into event mutation endpoints",
+    "Guest portal tasks wire ownership checks into resource endpoints",
+    "H06 builds user-facing administration and authentication UI"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

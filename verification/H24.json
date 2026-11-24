@@ -1,0 +1,20 @@
+{
+  "task": "H24",
+  "status": "in_progress",
+  "evidence": [
+    "backend/tests/test_product_journey.py",
+    "acceptance_checklist.json",
+    "verification/H24-review.md"
+  ],
+  "checks": [
+    "Production Next.js build passed; 78 Backend tests pass on real PostgreSQL; 4 Frontend tests, typecheck and Ruff pass",
+    "Local migration c41e9a7b2d10 applied after initial 500; smoke test and public routes now pass; unauthenticated private API returns 401",
+    "Complete event-to-cancellation API journey passes on isolated real PostgreSQL",
+    "All 73 PRD acceptance criteria map to implementation tasks and existing evidence",
+    "RTL, Anjoman font, responsive CSS breakpoints and API error handling reviewed statically"
+  ],
+  "pending": [
+    "Visual browser/mobile walkthrough deferred per user's earlier request",
+    "H25/H26 technical gate review and H29 product-owner acceptance remain"
+  ]
+}

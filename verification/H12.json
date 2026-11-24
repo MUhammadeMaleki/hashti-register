@@ -1,0 +1,18 @@
+{
+  "task": "H12",
+  "status": "passed_without_preview",
+  "checks": [
+    "30 backend tests passed on isolated real PostgreSQL schemas; Ruff passed",
+    "Late registration failure rolls back the new guest, wallet and registration together",
+    "Group registration keeps valid members while duplicate, blank-name and missing-phone members leave no partial data",
+    "Guest account creation reuses the existing contact profile; duplicate account and cancelled registration do not create new records",
+    "Database unique constraints reject duplicate guest account and duplicate event registration",
+    "Concurrent registration of the same phone in two different events creates one shared guest and wallet with two registrations",
+    "Assigned secretary can add a guest; missing CSRF and unassigned secretary are rejected; closed and cancelled event requests leave data unchanged"
+  ],
+  "limits": [
+    "No Uvicorn, frontend dev server, browser preview or production build run at user's request",
+    "ClickUp status update deferred because daily MCP call limit was reached"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

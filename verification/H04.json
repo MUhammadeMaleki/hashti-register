@@ -1,0 +1,22 @@
+{
+  "task": "H04",
+  "status": "passed",
+  "checks": [
+    "15 backend tests passed against PostgreSQL 17, including 5 authentication integration tests",
+    "Guest registration reused an existing profile or atomically created a new profile and zero-balance wallet without an event registration",
+    "Two concurrent requests for the same phone produced one guest, wallet and account",
+    "Admin and guest login used Argon2id hashes and signed 15-minute access JWTs",
+    "Cookies used HttpOnly access/refresh, SameSite=Lax and a readable CSRF cookie; mutation endpoints rejected missing or invalid Origin/CSRF",
+    "Refresh rotated a 30-day token; replay revoked the actor's active sessions",
+    "Logout, password change and account deactivation invalidated previous access",
+    "Repeated login failures caused a temporary account lock",
+    "Temporary password expired after 24 hours, was consumed on first successful login, forced password change and was never stored in plaintext",
+    "Ruff and pip check passed"
+  ],
+  "remaining_in_later_tasks": [
+    "H06 connects the frontend login and registration forms to these endpoints; no token is stored in localStorage",
+    "H05 adds authorization to domain resources and user management",
+    "Deployment configures Nginx route/IP rate limits and TLS"
+  ],
+  "clickup_sync": "pending_daily_mcp_limit"
+}

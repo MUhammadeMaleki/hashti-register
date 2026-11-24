@@ -1,0 +1,22 @@
+[Unit]
+Description=Hashti FastAPI
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=hashti
+Group=hashti
+WorkingDirectory=/srv/hashti/current/backend
+EnvironmentFile=/etc/hashti/hashti.env
+ExecStart=/srv/hashti/current/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips=127.0.0.1
+Restart=on-failure
+RestartSec=3
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/hashti/uploads
+
+[Install]
+WantedBy=multi-user.target

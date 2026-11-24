@@ -1,0 +1,851 @@
+{
+  "name": "هشتی — برنامه اجرایی نسخه ۱ در ۱۰ روز",
+  "version": 1,
+  "status": "execution_started",
+  "source_documents": [
+    "Hashti_PRD_v1.3.md",
+    "tech_design.md"
+  ],
+  "schedule": {
+    "timezone": "Asia/Tehran",
+    "planning_date": "2026-11-22",
+    "proposed_start": "2026-11-23",
+    "proposed_end": "2026-12-02",
+    "calendar_days": 10,
+    "note": "با توجه به ساعت ۲۲:۱۷ امروز، امشب روز برنامه‌ریزی و شروع ۱۰ روز اجرا از فردا پیشنهاد می‌شود؛ تاریخ‌ها پس از توافق تثبیت شوند.",
+    "hours_per_day": 8,
+    "total_estimated_hours": 80
+  },
+  "assumptions": [
+    "اجرای اصلی با همکاری Codex و مالک محصول در نشست‌های کاری؛ این برنامه اجرای خودکار بین نشست‌ها ایجاد نمی‌کند.",
+    "۸ ساعت کار متمرکز روزانه شامل پیاده‌سازی، بررسی و تست؛ این برآورد تعهد قطعی ظرفیت یا زمان تحویل نیست.",
+    "حداکثر دو تسک هم‌زمان؛ پیاده‌سازی هر قابلیت شامل Backend، UI و تست مرتبط است.",
+    "دامنه نسخه اول PRD حفظ می‌شود؛ روز ۸ کنترل دامنه و بازبرآورد داریم؛ تأخیر با حذف مخفی قابلیت یا تست جبران نمی‌شود.",
+    "زیرساخت PostgreSQL توسعه/تست از روز اول، سرور و دامنه/TLS تا روز ۳ و فایل‌های نمونه Excel تا روز ۴ لازم است.",
+    "روزهای ۹ و ۱۰ برای افزودن قابلیت تازه برنامه‌ریزی نشده‌اند؛ ۶ ساعت ذخیره صریح رفع باگ/انتشار در H27 و H30 وجود دارد."
+  ],
+  "clickup": {
+    "workspace_id": "1500500000015474",
+    "space_name": "هشتی",
+    "list_name": "نسخه ۱ | برنامه ۱۰روزه",
+    "document_name": "برنامه اجرا و معیارهای تحویل هشتی",
+    "workflow": [
+      "to do",
+      "in progress",
+      "complete"
+    ],
+    "note": "۳۰ تسک و ۵۳ وابستگی در Space انتخاب‌شده ساخته و با خواندن مجدد بررسی شدند. تاریخ‌ها از 2026-11-23 تا 2026-12-02 به وقت تهران ثبت شده‌اند. وضعیت بازبینی جداگانه در Space وجود ندارد؛ نتیجه تست و بازبینی باید پیش از complete ثبت شود. ساخت Doc خصوصی با Access denied مواجه شد؛ برنامه در توضیح List و تسک‌ها موجود است.",
+    "space_id": "1500500000142431",
+    "space_url": "https://app.clickup.com/1500500000015474/v/s/1500500000142431",
+    "list_id": "1500500000179483",
+    "list_url": "https://app.clickup.com/1500500000015474/v/l/li/1500500000179483",
+    "verification": {
+      "tasks": 30,
+      "dependencies": 53,
+      "total_estimate_hours": 80,
+      "dates_verified": true,
+      "acceptance_text_verified": true,
+      "dependencies_verified": true
+    }
+  },
+  "daily_deliverables": [
+    "پروژه قابل اجرا، PostgreSQL و مدل داده",
+    "ورود امن و پنل فارسی با مجوزها",
+    "رویداد، صفحه عمومی و بانک مخاطبان",
+    "ثبت‌نام تکی/گروهی و پایه دفتر مالی",
+    "حضور، سفارش، تسویه و اصلاح کیف پول",
+    "رسیدها، لغو و فعال‌سازی مجدد",
+    "پورتال مهمان، گزارش و خروجی Excel",
+    "ورود گروهی و نسخه آزمایشی کامل",
+    "تست مالی/هم‌زمانی/دسترسی و رفع اشکال",
+    "بازیابی بکاپ، پذیرش و تحویل/استقرار"
+  ],
+  "definition_of_done": [
+    "معیار پذیرش تسک و موارد مرتبط PRD برآورده شوند.",
+    "UI به API و دیتابیس واقعی وصل باشد؛ صرفاً صفحه یا mock به معنی اتمام نیست.",
+    "تست‌های مرتبط و build لازم موفق و نتیجه قابل بازبینی ثبت شود.",
+    "عملیات مالی اتمیک و idempotent، دارای Audit و سازگار با دفتر باشند.",
+    "اسرار، فایل‌های خصوصی و مالکیت داده مطابق طراحی کنترل شوند.",
+    "تسک پس از بازبینی و شاهد تست Done شود؛ اشکال بحرانی/شدید باز مانع انتشار است."
+  ],
+  "decision_gates": [
+    {
+      "task": "H01",
+      "decision": "اثر بازگردانی رویداد بر ثبت‌نام و مالی",
+      "status": "approved",
+      "resolution": "فعال‌سازی مجدد رویداد فقط خود رویداد را فعال می‌کند؛ ثبت‌نام‌ها جداگانه طبق بخش ۸ فعال می‌شوند و هزینه‌ها، تسویه‌ها و برگشت‌های قبلی خودکار بازگردانده نمی‌شوند.",
+      "approval_source": "تأیید صریح مالک محصول در گفتگو: موافقم"
+    },
+    {
+      "task": "H24",
+      "decision": "تطبیق دامنه کامل با زمان باقی‌مانده",
+      "status": "scheduled"
+    },
+    {
+      "task": "H29",
+      "decision": "پذیرش مالک محصول و اجازه انتشار",
+      "status": "scheduled"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "H01",
+      "day": 1,
+      "estimate_hours": 2,
+      "title": "تثبیت قواعد و معیارهای پذیرش",
+      "references": "PRD §§۱۸–۱۹؛ Tech §§۶،۸،۱۵",
+      "depends_on": [],
+      "scope": "رفع تعارض متن قدیمی §۱۵.۲ با دو تصمیم نهایی؛ تصمیم صریح درباره اثر فعال‌سازی رویداد بر ثبت‌نام‌های لغوشده و آثار مالی؛ تهیه چک‌لیست تطبیق PRD. تصمیم مصوب: فعال‌سازی رویداد به‌تنهایی ثبت‌نام و هزینه یا تسویه قبلی را بازنگرداند.",
+      "acceptance": "دو تصمیم قبلی مبنای کار باشند؛ رفتار بازگردانی مستند و تأیید شود؛ هیچ ابهام مالی وارد پیاده‌سازی نشود.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvh7",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvh7",
+      "clickup_status": "in progress",
+      "artifacts": [
+        "Hashti_PRD_v1.3.md",
+        "tech_design.md",
+        "acceptance_checklist.json"
+      ],
+      "progress": "مستندسازی H01 کامل و تصمیم PD-03 مصوب است. تلاش مجدد برای بستن تسک همچنان با سقف روزانه ۱۰۰ عملیات MCP رد شد؛ بررسی حساب کاربری از این سقف مستقل بود.",
+      "sync_status": "pending_daily_mcp_limit",
+      "pending_clickup_update": {
+        "status": "complete",
+        "markdown_description": "شناسه برنامه: H01\nروز اجرا: 1 — 2026-11-23\nبرآورد اولیه: 2 ساعت\nمرجع: PRD §§۱۸–۱۹؛ Tech §§۶،۸،۱۵\n\nدامنه اجرا\nرفع تعارض متن قدیمی §۱۵.۲ با دو تصمیم نهایی؛ تصمیم صریح درباره اثر فعال‌سازی رویداد بر ثبت‌نام‌های لغوشده و آثار مالی؛ تهیه چک‌لیست تطبیق PRD. تصمیم مصوب: فعال‌سازی رویداد به‌تنهایی ثبت‌نام و هزینه یا تسویه قبلی را بازنمی‌گرداند.\n\nمعیار پذیرش\nدو تصمیم قبلی مبنای کار باشند؛ رفتار بازگردانی مستند و تأیید شود؛ هیچ ابهام مالی وارد پیاده‌سازی نشود.\n\nپیش‌نیازها: ندارد\n\nقاعده اتمام\nرابط کاربری، API و دیتابیس واقعی یکپارچه باشند. تست‌های مرتبط و build لازم موفق و شاهد نتیجه ثبت شود. اتمام پس از بازبینی و تست است. برآوردها هدف اولیه‌اند و اجرای خودکار بین نشست‌ها ایجاد نمی‌کنند.\n\n## خروجی H01\n\n*   دو تصمیم قطعی مالک محصول در PRD و Tech Design همسو شدند: ممنوعیت سفارش pending و امکان فعال‌سازی خود رویداد لغوشده.\n*   متن منسوخ بخش ۱۵.۲ طراحی فنی اصلاح شد؛ ممنوعیت فعال‌سازی ثبت‌نام در رویداد لغوشده از امکان فعال‌سازی خود رویداد تفکیک شد.\n*   دو معیار صریح به بخش ۱۹ PRD افزوده شد.\n*   فایل acceptance\\_checklist.json شامل ۷۳ معیار محصول و ۱۷ گروه تست فنی با شناسه، مرجع، تسک مسئول و محل ثبت شواهد تهیه شد. تمام معیارهای اجرایی هنوز not\\_implemented هستند.\n*   فایل‌های خروجی در پروژه: Hashti\\_PRD\\_v1.3.md، tech\\_design.md، acceptance\\_checklist.json و implementation\\_plan.json.\n\n## تصمیم نهایی مالک محصول — مصوب\n\nمالک محصول با پاسخ صریح «موافقم» تأیید کرد: فعال‌سازی مجدد رویداد فقط خود رویداد را فعال می‌کند؛ ثبت‌نام‌ها جداگانه طبق بخش ۸ فعال می‌شوند و هزینه‌ها، settlementها و refundهای قبلی خودکار بازگردانده نمی‌شوند. فعال‌سازی خود رویداد وضعیت باز/بسته ثبت‌نام را تغییر نمی‌دهد.\n\nاین تصمیم در بخش ۱۸ و معیار پذیرش PRD، بخش‌های ۶.۴ و ۱۵.۲ طراحی فنی و تصمیم PD-03 چک‌لیست ثبت شد. تصمیم محصول بازی برای H01 باقی نمانده است.\n\n## معیار اتمام این تسک سندی\n\nهمسویی قواعد مصوب، ثبت تصمیم PD-03 و تکمیل نگاشت معیارهای پذیرش به تسک‌ها انجام شد. تست اجرایی یا UI شرط اتمام H01 نیست؛ اثبات اجرای معیارها در تسک‌های پیاده‌سازی ثبت خواهد شد.\n\n## نتیجه بررسی نهایی\n\n- هر ۷۳ معیار بخش ۱۹ PRD با متن چک‌لیست تطبیق داده شد؛ ۱۷ گروه تست فنی نیز به تسک‌های معتبر متصل‌اند.\n- ۳ تصمیم محصول مصوب و صفر تصمیم باز در H01 ثبت شد.\n- JSON فایل‌ها و نگاشت‌ها بررسی شدند؛ متن متناقض منسوخ حذف شد.\n- این تسک سندی تکمیل شده است؛ معیارهای اجرایی همگی not_implemented باقی مانده‌اند و هیچ تست اجرایی یا قابلیت ساخته‌شده گزارش نمی‌شود.\n- H02 نیز پیاده‌سازی و بررسی شده است؛ شواهد در verification/H02.json موجود است."
+      },
+      "verification": {
+        "product_criteria": 73,
+        "technical_groups": 17,
+        "approved_decisions": 3,
+        "open_decisions": 0,
+        "exact_product_mapping": true,
+        "runtime_tests": "not_applicable_documentation_task"
+      }
+    },
+    {
+      "id": "H02",
+      "day": 1,
+      "estimate_hours": 3,
+      "title": "راه‌اندازی ساختار پروژه و محیط توسعه",
+      "references": "Tech §§۱،۱۳،۱۴",
+      "depends_on": [
+        "H01"
+      ],
+      "scope": "ساخت backend و frontend با FastAPI، Next.js/TypeScript و تنظیمات محیط؛ PostgreSQL واقعی توسعه/تست، Alembic و health check؛ ثبت دستورهای اجرا و وابستگی‌های قفل‌شده؛ بدون Docker.",
+      "acceptance": "هر دو برنامه محلی اجرا شوند؛ migration و یک تست اتصال PostgreSQL موفق باشند؛ secrets وارد سورس نشوند.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvh8",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvh8",
+      "clickup_status": "to do",
+      "sync_status": "pending_daily_mcp_limit",
+      "progress": "اسکلت FastAPI/Next.js، PostgreSQL مستقل توسعه و تست، Migration پایه، lock وابستگی‌ها، health/readiness و proxy آماده و با ۴ تست Backend، typecheck، build و smoke واقعی بررسی شد.",
+      "artifacts": [
+        "README.md",
+        "backend/app",
+        "backend/alembic",
+        "backend/requirements.txt",
+        "frontend/src",
+        "frontend/package-lock.json",
+        "scripts/local-postgres.ps1",
+        "scripts/smoke.mjs",
+        "verification/H02.json"
+      ],
+      "verification": {
+        "backend_tests_passed": 4,
+        "migration": "0001_bootstrap (head)",
+        "database": "real PostgreSQL 17",
+        "typecheck": "passed",
+        "production_build": "passed",
+        "http_smoke": "passed"
+      },
+      "pending_clickup_update": {
+        "status": "complete",
+        "append_description": "\n\n## نتیجه H02\n\nاسکلت FastAPI و Next.js/TypeScript ساخته شد؛ PostgreSQL 17 اختصاصی پروژه روی 127.0.0.1:55432 با دیتابیس توسعه و تست جدا و نقش محدود آماده است. سرویس PostgreSQL موجود تغییر نکرد. تنظیمات و رمزها در backend/.env نادیده‌گرفته‌شده‌اند. requirements.txt و package-lock.json وابستگی‌ها را قفل می‌کنند.\n\nAlembic روی دیتابیس توسعه و تست به 0001_bootstrap (head) رسید؛ جدول‌های دامنه در H03 اضافه می‌شوند. چهار تست Backend روی PostgreSQL واقعی موفق شدند. ruff، pip check، TypeScript و Next.js production build موفق‌اند. scripts/smoke.mjs پاسخ صفحه فارسی/RTL، API و PostgreSQL از مسیر proxy واقعی را تأیید کرد.\n\nراهنمای اجرا: README.md. شاهد: verification/H02.json. برنامه‌ها در بررسی روی پورت‌های 8000 و 3000 اجرا شدند. یک warning منسوخ‌شدن upstream httpx/Starlette مانع تست نیست. بستن این تسک در ClickUp پس از رفع سقف روزانه اتصال انجام شود."
+      }
+    },
+    {
+      "id": "H03",
+      "day": 1,
+      "estimate_hours": 3,
+      "title": "مدل داده، قیود و زیرساخت تست",
+      "references": "Tech §۲",
+      "depends_on": [
+        "H02"
+      ],
+      "scope": "مدل‌ها، FK/UNIQUE/CHECK، ایندکس‌ها و migration اولیه؛ فیکسچر تست مستقل؛ seed مدیر هشتی و داده نمایشی؛ ساخت اتمیک پروفایل و کیف پول.",
+      "acceptance": "پایگاه خالی تا head ساخته شود؛ قیود مهم واقعاً نقض داده را رد کنند؛ پروفایل بدون کیف پول باقی نماند.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvh9",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvh9",
+      "clickup_status": "to do",
+      "sync_status": "pending_daily_mcp_limit",
+      "artifacts": [
+        "backend/app/models/domain.py",
+        "backend/alembic/versions/b30ce05cd3ac_domain_schema.py",
+        "backend/app/services/guests.py",
+        "backend/app/seed.py",
+        "backend/tests/test_domain.py",
+        "verification/H03.json"
+      ],
+      "verification": {
+        "result": "passed",
+        "domain_tables": 18,
+        "migration": "b30ce05cd3ac",
+        "postgresql_integration_tests": 10,
+        "alembic_check": "no_new_upgrade_operations"
+      },
+      "pending_clickup_update": {
+        "status": "complete",
+        "append_description": "\n\n## نتیجه H03\n\n۱۸ جدول دامنه با مدل‌های SQLAlchemy، قیود FK/UNIQUE/CHECK، ایندکس‌های ضروری و Migration b30ce05cd3ac ساخته شد. ایجاد مهمان و کیف پول صفر در یک تراکنش انجام می‌شود. seed مدیر هشتی با رمز تعاملی و هش Argon2id و داده نمایشی اختیاری/تکرارپذیر آماده است. Migration روی دیتابیس توسعه اجرا شد؛ ساخت از اسکیمای خالی در دیتابیس تست تأیید شد. ۱۰ تست Backend روی PostgreSQL واقعی موفق، ruff و pip check و alembic check بدون خطا بودند. جزئیات: verification/H03.json و README.md. قواعد چندرکوردی مالی و منع سفارش pending در سرویس‌های مراحل بعد اعمال می‌شوند."
+      }
+    },
+    {
+      "id": "H04",
+      "day": 2,
+      "estimate_hours": 3,
+      "title": "احراز هویت و نشست‌های امن",
+      "references": "PRD §۳؛ Tech §۱۲",
+      "depends_on": [
+        "H03"
+      ],
+      "scope": "ورود مدیر و مهمان، Argon2id، cookie، JWT و refresh چرخشی، logout و ابطال نشست، CSRF، قفل موقت؛ ایجاد مستقل حساب مهمان و رمز موقت ۲۴ساعته.",
+      "acceptance": "ساخت حساب با موبایل موجود/جدید بدون ثبت‌نام رویداد درست باشد؛ کاربر غیرفعال و نشست باطل رد شوند؛ توکن در localStorage ذخیره نشود.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvha",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvha",
+      "clickup_status": "to do",
+      "sync_status": "pending_daily_mcp_limit",
+      "artifacts": [
+        "backend/app/core/security.py",
+        "backend/app/services/auth.py",
+        "backend/app/api/auth.py",
+        "backend/app/api/dependencies.py",
+        "backend/tests/test_auth.py",
+        "scripts/ensure-auth-secret.ps1",
+        "verification/H04.json"
+      ],
+      "verification": {
+        "result": "passed",
+        "backend_tests": 15,
+        "real_postgresql_auth_tests": 5,
+        "ruff": "passed",
+        "pip_check": "passed"
+      },
+      "pending_clickup_update": {
+        "status": "complete",
+        "append_description": "\n\n## نتیجه H04\n\nورود مدیر/مهمان، ساخت مستقل حساب مهمان با پروفایل و کیف پول اتمیک، هش Argon2id، JWT پانزده‌دقیقه‌ای، cookieهای HttpOnly/SameSite و Secure در محیط غیرتوسعه، refresh چرخشی ۳۰روزه و تشخیص استفاده مجدد، خروج و ابطال نشست، CSRF و Origin، قفل موقت، تغییر رمز و رمز موقت یک‌بارمصرف ۲۴ساعته پیاده شد. Secret محلی تصادفی به backend/.env نادیده‌گرفته‌شده افزوده شد. ۱۵ تست Backend روی PostgreSQL واقعی موفق‌اند؛ سناریوهای هم‌زمانی حساب، نشست باطل/کاربر غیرفعال و رمز موقت پوشش دارند. رابط ورود در H06 و سیاست rate limit لایه Nginx در استقرار پیاده می‌شود. شاهد: verification/H04.json و README.md."
+      }
+    },
+    {
+      "id": "H05",
+      "day": 2,
+      "estimate_hours": 2,
+      "title": "مجوزها، کاربران و تنظیمات",
+      "references": "PRD §§۳،۱۴؛ Tech §۳.۶",
+      "depends_on": [
+        "H04"
+      ],
+      "scope": "نقش مدیر هشتی و دبیر، کنترل انتساب رویداد و مالکیت منابع؛ مدیریت دبیران و تنظیمات بانکی، پشتیبانی و سقف بدهی؛ تست دسترسی متقاطع.",
+      "acceptance": "دبیر روی رویداد دیگر حق تغییر نداشته باشد؛ مهمان به داده دیگران دسترسی نداشته باشد؛ سوابق دبیر غیرفعال حفظ شوند.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhb",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhb",
+      "clickup_status": "to do",
+      "sync_status": "pending_daily_mcp_limit",
+      "artifacts": [
+        "backend/app/api/dependencies.py",
+        "backend/app/api/management.py",
+        "backend/tests/test_management.py",
+        "verification/H05.json"
+      ],
+      "verification": {
+        "result": "passed",
+        "backend_tests": 17,
+        "real_postgresql_management_tests": 2,
+        "ruff": "passed"
+      },
+      "pending_clickup_update": {
+        "status": "complete",
+        "append_description": "\n\n## نتیجه H05\n\nکنترل نقش مدیر هشتی، انتساب دبیر به رویداد و مالکیت ثبت‌نام، رسید و کیف پول مهمان در Backend آماده شد. API مدیریت دبیران شامل ایجاد، مشاهده، ویرایش، تغییر رمز و فعال/غیرفعال‌سازی بدون حذف تاریخی است؛ غیرفعال‌سازی نشست‌های قبلی را باطل می‌کند. تنظیمات عمومی و بانکی، لینک‌های پشتیبانی و سقف بدهی فقط برای مدیر هشتی قابل تغییرند. ۱۷ تست Backend روی PostgreSQL واقعی و Ruff موفق‌اند. کنترل انتساب در endpointهای رویداد H07 و مالکیت در endpointهای پورتال مهمانِ تسک‌های بعدی استفاده خواهد شد. شاهد: verification/H05.json."
+      }
+    },
+    {
+      "id": "H06",
+      "day": 2,
+      "estimate_hours": 3,
+      "title": "پوسته فارسی پنل و اتصال API",
+      "references": "Tech §۴",
+      "depends_on": [
+        "H04"
+      ],
+      "scope": "ناوبری پنل/حساب، ورود و ساخت حساب و رمز موقت، اجزای فرم و جدول، RTL و موبایل، تاریخ شمسی و مبلغ تومان؛ API client و مدیریت خطا/بارگذاری و CSRF.",
+      "acceptance": "ورود واقعی و نمایش خطا کار کند؛ فرم‌ها با صفحه‌کلید و موبایل قابل استفاده باشند؛ مسیرهای مدیریتی مجوز را از Backend بگیرند.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhc",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhc",
+      "clickup_status": "to do",
+      "sync_status": "pending_daily_mcp_limit",
+      "artifacts": [
+        "frontend/src/app/login/page.tsx",
+        "frontend/src/app/panel/page.tsx",
+        "frontend/src/app/account/page.tsx",
+        "frontend/src/app/change-password/page.tsx",
+        "frontend/src/components",
+        "frontend/src/lib",
+        "frontend/tests/api.test.mjs",
+        "verification/H06.json"
+      ],
+      "verification": {
+        "result": "passed_with_browser_qa_limit",
+        "frontend_tests": 4,
+        "typecheck": "passed",
+        "production_build": "passed",
+        "http_smoke": "passed",
+        "browser_qa": "unavailable"
+      },
+      "pending_clickup_update": {
+        "status": "complete",
+        "append_description": "\n\n## نتیجه H06\n\nرابط فارسی RTL و واکنش‌گرا، ورود دبیر/مهمان، ساخت حساب مهمان، تغییر رمز موقت، پوسته پنل و حساب و فهرست مدیریتی مدیر هشتی به Backend متصل شدند. کلاینت API با cookie هم‌مبدأ، CSRF، تمدید نشست، مدیریت خطا/بارگذاری و قالب تاریخ شمسی/تومان آماده است؛ توکن در localStorage ذخیره نمی‌شود. چهار تست Frontend، typecheck، build و smoke HTTP روی proxy واقعی و PostgreSQL موفق‌اند. مرورگر تعاملی در این محیط در دسترس نبود؛ آزمون دستی صفحه‌کلید و نمای موبایل در اولین فرصت انجام شود. شاهد: verification/H06.json."
+      }
+    },
+    {
+      "id": "H07",
+      "day": 3,
+      "estimate_hours": 3,
+      "title": "رویدادها، مکان‌ها و مدیریت دبیران",
+      "references": "PRD §۴؛ Tech §§۲،۳",
+      "depends_on": [
+        "H05",
+        "H06"
+      ],
+      "scope": "API و UI ساخت/ویرایش رویداد و مکان، شماره یکتا، تاریخ گذشته و اطلاعات ناقص، میزبانان، ظرفیت نرم، دبیران، باز/بسته ثبت‌نام؛ اصلاح مکان مشترک.",
+      "acceptance": "دو شماره هم‌زمان تکراری نشوند؛ ظرفیت مانع ثبت‌نام نشود؛ اصلاح مکان در رویدادهای متصل دیده شود؛ مکان وابسته حذف نشود.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhd",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhd",
+      "clickup_status": "to do",
+      "sync_status": "pending_daily_mcp_limit",
+      "artifacts": [
+        "backend/app/api/events.py",
+        "backend/tests/test_events.py",
+        "frontend/src/lib/events.ts",
+        "frontend/src/components/events",
+        "frontend/src/app/panel/events",
+        "frontend/src/app/panel/locations/page.tsx",
+        "verification/H07.json"
+      ],
+      "verification": {
+        "result": "passed_with_browser_qa_limit",
+        "backend_tests": 19,
+        "frontend_tests": 4,
+        "typecheck": "passed",
+        "production_build": "passed",
+        "http_smoke": "passed",
+        "browser_qa": "unavailable"
+      },
+      "pending_clickup_update": {
+        "status": "complete",
+        "append_description": "\n\n## نتیجه H07\n\nAPI و UI فهرست، ساخت، ویرایش و حذف امن رویداد و مکان ساخته شد. شماره هشتی یکتا و شماره پیشنهادی غیرقطعی است؛ تست هم‌زمانی یک ۲۰۱ و یک ۴۰۹ را تأیید کرد. دبیر ایجادکننده خودکار منتسب می‌شود، دبیر غیرمنتسب حق تغییر ندارد و مدیر هشتی می‌تواند دبیران را جایگزین کند بی‌آنکه انتساب دبیر غیرفعال از تاریخچه حذف شود. تاریخ گذشته و حالت اعلام بعدی مجازند، حالت دقیق به تاریخ/ساعت/مکان نیاز دارد، ظرفیت نرم است، و ویرایش مکان مشترک در رویدادهای متصل دیده می‌شود. حذف مکان وابسته و رویداد دارای تاریخچه رد می‌شود. فرم تاریخ شمسی به ISO API تبدیل می‌شود. ۱۹ تست Backend روی PostgreSQL، ۴ تست Frontend، build و smoke HTTP موفق‌اند. QA تعاملی مرورگر در محیط حاضر ممکن نبود؛ آزمون ثبت‌نام بیش از ظرفیت از مسیر عمومی در تسک ثبت‌نام تکمیل می‌شود. لغو/فعال‌سازی رویداد به H18 و منطق مالی آن موکول است. شاهد: verification/H07.json."
+      }
+    },
+    {
+      "id": "H08",
+      "day": 3,
+      "estimate_hours": 2,
+      "title": "صفحات عمومی و پوستر",
+      "references": "PRD §۵؛ Tech §§۳.۲،۱۲.۴",
+      "depends_on": [
+        "H07"
+      ],
+      "scope": "صفحه اصلی، آرشیو و جزئیات رویداد با پوستر، زمان/مکان تقریبی، یادداشت و لینک پشتیبانی و بانک؛ آپلود پوستر معتبر.",
+      "acceptance": "رویداد لغوشده حتی از مسیر مستقیم عمومی در دسترس نباشد؛ نام و تعداد شرکت‌کنندگان عمومی نشود؛ پوستر اختیاری باشد.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhe",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhe",
+      "clickup_status": "to do",
+      "sync_status": "pending_clickup_invalid_argument",
+      "artifacts": [
+        "backend/app/api/public.py",
+        "backend/app/api/events.py",
+        "backend/tests/test_public.py",
+        "frontend/src/app/page.tsx",
+        "frontend/src/app/upcoming/page.tsx",
+        "frontend/src/app/archive/page.tsx",
+        "frontend/src/app/events/[id]/page.tsx",
+        "frontend/src/components/public-event-card.tsx",
+        "verification/H08.json"
+      ],
+      "verification": {
+        "result": "passed_with_browser_qa_limit",
+        "backend_tests": 20,
+        "frontend_tests": 4,
+        "typecheck": "passed",
+        "http_smoke": "passed",
+        "production_build": "not_run_by_user_request",
+        "browser_qa": "unavailable"
+      },
+      "pending_clickup_update": {
+        "status": "complete",
+        "append_description": "\n\n## نتیجه H08\n\nAPI عمومی صفحه‌بندی‌شده برای رویدادهای پیش‌رو و آرشیو، جزئیات رویداد و تنظیمات عمومی ساخته شد. رویداد لغوشده در فهرست، جزئیات و پوستر عمومی ۴۰۴ می‌دهد؛ پاسخ عمومی نام و تعداد مهمان‌ها، ظرفیت و دبیران را ندارد. صفحه اصلی، فهرست پیش‌رو، آرشیو و جزئیات با پوستر اختیاری، زمان/مکان تقریبی، نقشه، هزینه، یادداشت و لینک‌های پشتیبانی ساخته شد. پوستر JPG/PNG/WebP/HEIC/HEIF با سقف ۵ مگابایت و بررسی MIME، امضای فایل و ابعاد آپلود می‌شود. ۲۰ تست Backend، ۴ تست Frontend، TypeScript، Ruff و smoke HTTP موفق‌اند. build طبق درخواست کاربر اجرا نشد؛ QA مرورگر تعاملی در محیط حاضر در دسترس نبود. ثبت‌نام عمومی به H10 مربوط است. شاهد: verification/H08.json."
+      }
+    },
+    {
+      "id": "H09",
+      "day": 3,
+      "estimate_hours": 3,
+      "title": "بانک مخاطبان و پروفایل دائمی",
+      "references": "PRD §۷؛ Tech §۲.۳",
+      "depends_on": [
+        "H03",
+        "H05",
+        "H06"
+      ],
+      "scope": "CRUD مخاطب و جست‌وجوی موبایل نرمال/نام، کیف پول اتمیک، تگ علاقه‌مندی، یادداشت عمومی و مالی و پروفایل ۳۶۰ درجه؛ بدون ادغام.",
+      "acceptance": "مخاطب بدون رویداد ساخته شود؛ موبایل فارسی/عربی نرمال شود؛ سوابق حضور و مالی به همان پروفایل متصل بمانند.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhf",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhf",
+      "clickup_status": "to do",
+      "delivery": {
+        "status": "complete_locally",
+        "verification": "verification/H09.json",
+        "clickup_sync": "pending_daily_mcp_limit"
+      }
+    },
+    {
+      "id": "H10",
+      "day": 4,
+      "estimate_hours": 3,
+      "title": "ثبت‌نام عمومی، گروهی و مدیریتی",
+      "references": "PRD §۶؛ Tech §۷",
+      "depends_on": [
+        "H08",
+        "H09"
+      ],
+      "scope": "فرم ساده و افزودن نفر دیگر، reuse پروفایل، ثبت‌نام یکتا و active/pending، افزودن مخاطب موجود/جدید در پنل؛ کنترل رویداد بسته و لغوشده در تمام مسیرها.",
+      "acceptance": "ثبت‌نام بدون هزینه و بدون حساب ورود باشد؛ هر عضو گروه مستقل باشد؛ ثبت‌نام تکراری حتی در رقابت درخواست‌ها ساخته نشود.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhg",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhg",
+      "clickup_status": "to do",
+      "delivery": {
+        "status": "complete_locally",
+        "verification": "verification/H10.json",
+        "clickup_sync": "pending_daily_mcp_limit"
+      }
+    },
+    {
+      "id": "H11",
+      "day": 4,
+      "estimate_hours": 3,
+      "title": "دفتر مالی و کنترل درخواست تکراری",
+      "references": "Tech §§۵،۱۰",
+      "depends_on": [
+        "H03",
+        "H10"
+      ],
+      "scope": "Service مالی با مرز تراکنش و ترتیب قفل ثابت؛ دفتر append-only، محاسبه بدهی/تسویه فعال و reconciliation؛ ذخیره پاسخ idempotency در تراکنش اصلی.",
+      "acceptance": "تکرار payload مشابه اثر دوم نداشته باشد؛ تغییر payload با همان کلید 409 دهد؛ موجودی با دفتر برابر و بدهی نامنفی باشد.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhh",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhh",
+      "clickup_status": "to do",
+      "delivery": {
+        "status": "complete_locally",
+        "verification": "verification/H11.json",
+        "clickup_sync": "pending_daily_mcp_limit"
+      }
+    },
+    {
+      "id": "H12",
+      "day": 4,
+      "estimate_hours": 2,
+      "title": "تست هسته داده و ثبت‌نام",
+      "references": "Tech §۱۴",
+      "depends_on": [
+        "H10",
+        "H11"
+      ],
+      "scope": "آزمون PostgreSQL برای rollback پروفایل/کیف پول، یکتایی حساب/ثبت‌نام، ثبت‌نام بسته و لغوشده و گروهی؛ پوشش مجوزهای پایه.",
+      "acceptance": "تست‌ها روی PostgreSQL واقعی و مستقل اجرا شوند؛ خطای هر عضو گروه داده ناقص همان عضو باقی نگذارد؛ نتایج ثبت شوند.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhj",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhj",
+      "clickup_status": "to do",
+      "delivery": {
+        "status": "complete_locally",
+        "verification": "verification/H12.json",
+        "clickup_sync": "pending_daily_mcp_limit"
+      }
+    },
+    {
+      "id": "H13",
+      "day": 5,
+      "estimate_hours": 3,
+      "title": "حضور و هزینه ورودی",
+      "references": "PRD §۸؛ Tech §۶",
+      "depends_on": [
+        "H11",
+        "H12"
+      ],
+      "scope": "همه گذارهای حضور و self-transition، entry مثبت و رویداد رایگان، اجرای اتمیک Audit/charge/refund؛ جدول مهمان‌های رویداد و تغییر سریع حضور.",
+      "acceptance": "همه گذارهای جدول ۶.۲ با ورودی مثبت و صفر تست شوند؛ برگشت به pending رد شود؛ entry صفر یا تکراری ساخته نشود.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhk",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhk",
+      "clickup_status": "to do",
+      "delivery": {
+        "status": "complete_locally",
+        "verification": "verification/H13.json",
+        "clickup_sync": "pending_daily_mcp_limit"
+      }
+    },
+    {
+      "id": "H14",
+      "day": 5,
+      "estimate_hours": 2,
+      "title": "سفارش‌ها و تغییر هزینه‌ها",
+      "references": "PRD §۹.۱۲؛ Tech §۹",
+      "depends_on": [
+        "H13"
+      ],
+      "scope": "چند سفارش با شرح، ویرایش/لغو، ممنوعیت ایجاد سفارش pending در API و UI، تغییر entry_fee انبوه و مثبت↔صفر؛ برگشت مازاد.",
+      "acceptance": "pending حتی با درخواست مستقیم سفارش نسازد؛ charge لغوشده دوباره فعال نشود؛ کاهش هزینه بدهی منفی نسازد.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhm",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhm",
+      "clickup_status": "to do",
+      "delivery": {
+        "status": "complete_locally",
+        "verification": "verification/H14.json",
+        "clickup_sync": "pending_daily_mcp_limit"
+      }
+    },
+    {
+      "id": "H15",
+      "day": 5,
+      "estimate_hours": 3,
+      "title": "تسویه، برگشت و اصلاح دستی کیف پول",
+      "references": "PRD §۹؛ Tech §۵",
+      "depends_on": [
+        "H11",
+        "H14"
+      ],
+      "scope": "تسویه کامل/جزئی، refund به settlement اصلی، اصلاح دستی مثبت/منفی با توضیح و ثبت عامل؛ UI مالی و هشدار سقف بدهی.",
+      "acceptance": "شارژ و اصلاح دستی تسویه خودکار نکنند؛ برداشت بیش از موجودی و برگشت بیش از تسویه رد شود؛ افزایش اعتبار دوست صرفاً اصلاح کیف پول دریافت‌کننده باشد.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhn",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhn",
+      "clickup_status": "to do",
+      "delivery": {
+        "status": "complete_locally",
+        "verification": "verification/H15.json",
+        "clickup_sync": "pending_daily_mcp_limit"
+      }
+    },
+    {
+      "id": "H16",
+      "day": 6,
+      "estimate_hours": 3,
+      "title": "ثبت رسید و فایل خصوصی",
+      "references": "PRD §۹.۵؛ Tech §§۱۱،۱۲.۴",
+      "depends_on": [
+        "H04",
+        "H11"
+      ],
+      "scope": "رسید مستقل و مرتبط با رویداد، کد پیگیری یا تصویر یا هر دو؛ MIME/magic bytes، سقف ۵MB و پیکسل، HEIC/HEIF و JPEG نمایشی؛ فایل خصوصی و حذف فایل ناقص.",
+      "acceptance": "رسید فاقد هر دو مدرک رد شود؛ رسید فقط کد مسیر تصویر NULL داشته باشد؛ تصویر بدون مالکیت در دسترس نباشد؛ تبدیل خراب پذیرفته نشود.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhp",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhp",
+      "clickup_status": "to do",
+      "delivery": {
+        "status": "complete_locally",
+        "verification": "verification/H16.json",
+        "clickup_sync": "pending_daily_mcp_limit"
+      }
+    },
+    {
+      "id": "H17",
+      "day": 6,
+      "estimate_hours": 2,
+      "title": "صف بررسی رسید و شارژ کیف پول",
+      "references": "PRD §۹.۶؛ Tech §۱۱",
+      "depends_on": [
+        "H16",
+        "H15"
+      ],
+      "scope": "فهرست و جزئیات رسید، approve/reject و topup اتمیک؛ دبیر فقط رویداد خودش و مدیر هشتی رسیدهای مستقل؛ UI وضعیت رسید.",
+      "acceptance": "تأیید هم‌زمان فقط یک topup بسازد؛ رد موجودی را تغییر ندهد؛ تأیید رسید بدهی رویداد را خودکار تسویه نکند.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhq",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhq",
+      "clickup_status": "to do",
+      "delivery": {
+        "status": "complete_locally",
+        "verification": "verification/H17.json",
+        "clickup_sync": "pending_daily_mcp_limit"
+      }
+    },
+    {
+      "id": "H18",
+      "day": 6,
+      "estimate_hours": 3,
+      "title": "لغو و فعال‌سازی مجدد ثبت‌نام و رویداد",
+      "references": "PRD §§۴.۹،۶.۷–۶.۸،۱۸؛ Tech §§۶.۴،۸",
+      "depends_on": [
+        "H01",
+        "H13",
+        "H15",
+        "H17"
+      ],
+      "scope": "لغو ثبت‌نام و رویداد با refund دقیق و حفظ تاریخچه؛ بازگردانی رویداد طبق تصمیم H01؛ فعال‌سازی صریح ثبت‌نام فقط در رویداد باز و لغونشده؛ UI و Audit. تصمیم مصوب PD-03: فعال‌سازی مجدد رویداد فقط خود رویداد را فعال می‌کند؛ ثبت‌نام‌ها جداگانه طبق بخش ۸ فعال می‌شوند و هزینه‌ها، تسویه‌ها و برگشت‌های قبلی خودکار بازگردانده نمی‌شوند.",
+      "acceptance": "لغو رویداد اتمیک و retry بی‌اثر باشد؛ بازگردانی رویداد آثار مالی ناخواسته نسازد؛ فعال‌سازی ثبت‌نام همان رکورد را pending کند؛ pending سفارش نپذیرد. فعال‌سازی رویداد وضعیت باز/بسته ثبت‌نام را تغییر ندهد؛ ثبت‌نام‌های لغوشده، دفتر و مانده کیف پول دست‌نخورده بمانند.",
+      "status": "complete",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhr",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhr",
+      "clickup_status": "to do",
+      "sync_status": "pending_daily_mcp_limit",
+      "pending_clickup_update": {
+        "append_description": "\n\n## تصمیم مصوب H01 / PD-03\n\nفعال‌سازی مجدد رویداد فقط خود رویداد را فعال می‌کند؛ ثبت‌نام‌ها جداگانه طبق بخش ۸ فعال می‌شوند و هزینه‌ها، تسویه‌ها و برگشت‌های قبلی خودکار بازگردانده نمی‌شوند.\n\nفعال‌سازی رویداد وضعیت باز/بسته ثبت‌نام را تغییر نمی‌دهد. ثابت‌ماندن ثبت‌نام‌های قبلی، دفتر و مانده کیف پول و بی‌اثر بودن retry در تست‌ها بررسی شود."
+      },
+      "delivery": {
+        "status": "complete_locally",
+        "verification": "verification/H18.json",
+        "clickup_sync": "pending_daily_mcp_limit"
+      }
+    },
+    {
+      "id": "H19",
+      "day": 7,
+      "estimate_hours": 3,
+      "title": "تکمیل پورتال مهمان",
+      "references": "PRD §§۷.۱۱،۹.۹؛ Tech §۳.۵",
+      "depends_on": [
+        "H10",
+        "H15",
+        "H17",
+        "H18"
+      ],
+      "scope": "پروفایل، سوابق مجاز، کیف پول، بدهی تفکیکی، تراکنش‌ها، ثبت/پیگیری رسید و تسویه با حساب خود؛ تکمیل جریان رمز موقت.",
+      "acceptance": "مهمان فقط اطلاعات خودش را ببیند؛ ثبت‌نام لغوشده از سوابق قابل مشاهده پنهان باشد؛ تسویه رویداد درست و رسید مستقل کار کند.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvht",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvht",
+      "clickup_status": "in progress"
+    },
+    {
+      "id": "H20",
+      "day": 7,
+      "estimate_hours": 3,
+      "title": "گزارش مالی، داشبورد و نمودارها",
+      "references": "PRD §§۱۰–۱۱؛ Tech §§۳،۵.۵",
+      "depends_on": [
+        "H15",
+        "H17",
+        "H18"
+      ],
+      "scope": "گزارش رویداد، بدهکاران و خالص اعتبار، داشبورد کلی، فیلترهای زمانی/حضور/علاقه‌مندی و جدید/قدیمی، نمودارهای PRD؛ reconciliation فقط مدیر هشتی.",
+      "acceptance": "مجموع‌ها با دفتر نمونه تطبیق کنند؛ همه دبیران گزارش ببینند ولی حق تغییر رویداد دیگر نگیرند؛ مغایرت خودکار اصلاح نشود.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhu",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhu",
+      "clickup_status": "in progress"
+    },
+    {
+      "id": "H21",
+      "day": 7,
+      "estimate_hours": 2,
+      "title": "خروجی Excel مطابق فیلتر",
+      "references": "PRD §۱۱.۴؛ Tech §۳.۴",
+      "depends_on": [
+        "H20"
+      ],
+      "scope": "خروجی جدول‌های مورد نیاز با همان فیلتر و مجوز گزارش، عنوان فارسی و تاریخ/مبالغ روشن؛ خنثی‌سازی محتوای فرمولی ورودی کاربر.",
+      "acceptance": "فایل باز شود؛ تعداد و مجموع خروجی با گزارش یکسان باشد؛ داده خارج از فیلتر یا مجوز نداشته باشد.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhv",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhv",
+      "clickup_status": "in progress"
+    },
+    {
+      "id": "H22",
+      "day": 8,
+      "estimate_hours": 3,
+      "title": "ورود Excel بانک مخاطبان",
+      "references": "PRD §۷.۹؛ Tech §§۳،۱۴",
+      "depends_on": [
+        "H09",
+        "H11"
+      ],
+      "scope": "نمونه فایل، اعتبارسنجی ستون‌ها/موبایل، preview، تأیید و گزارش خطا به تفکیک ردیف؛ ورود حدود ۱۰۰۰ مخاطب بدون رویداد و بدون حساب ورود.",
+      "acceptance": "ردیف معتبر وارد و خطای ردیف نامعتبر گزارش شود؛ کیف پول صفر اتمیک و جلوگیری از پروفایل تکراری حفظ شود؛ retry تأیید داده تکراری نسازد.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhw",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhw",
+      "clickup_status": "in progress"
+    },
+    {
+      "id": "H23",
+      "day": 8,
+      "estimate_hours": 2,
+      "title": "ورود Excel آرشیو رویدادها",
+      "references": "PRD §۱۲",
+      "depends_on": [
+        "H07",
+        "H22"
+      ],
+      "scope": "قالب رویداد گذشته، preview و تأیید، شماره یکتا، مکان و داده اختیاری، گزارش نتیجه حدود ۱۸۰ رویداد؛ استفاده از ساختار فعلی رویداد.",
+      "acceptance": "رویداد بدون پوستر یا اطلاعات اختیاری وارد شود؛ شماره تکراری گزارش شود؛ نبود سابقه مهمان غیبت تلقی نشود.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhx",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhx",
+      "clickup_status": "in progress"
+    },
+    {
+      "id": "H24",
+      "day": 8,
+      "estimate_hours": 3,
+      "title": "نسخه آزمایشی یکپارچه و بازبینی محصول",
+      "references": "PRD §۱۹؛ Tech §§۴،۱۳",
+      "depends_on": [
+        "H19",
+        "H21",
+        "H22",
+        "H23"
+      ],
+      "scope": "اجرای کامل سناریوی رویداد→ثبت‌نام→حضور→سفارش→رسید→تسویه→لغو؛ بررسی موبایل/RTL و حالت‌های خطا؛ build production؛ فهرست اشکالات با شدت.",
+      "acceptance": "هر بخش PRD به یک تسک و شاهد پذیرش وصل باشد؛ کاربر سناریوی روزمره را در نسخه آزمایشی طی کند؛ فهرست باگ‌ها و نتیجه بازبینی ثبت شود.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhy",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhy",
+      "clickup_status": "in progress"
+    },
+    {
+      "id": "H25",
+      "day": 9,
+      "estimate_hours": 3,
+      "title": "آزمون مالی و هم‌زمانی کامل PostgreSQL",
+      "references": "Tech §۱۴",
+      "depends_on": [
+        "H24"
+      ],
+      "scope": "دو session واقعی برای تسویه هم‌زمان، برداشت/تسویه، approve تکراری، حضور/تسویه، کاهش هزینه/refund و کلید idempotency مشترک؛ کنترل همه assertions مالی.",
+      "acceptance": "هیچ خرج/شارژ/برگشت مضاعف رخ ندهد؛ ledger=balance و debt≥0؛ شمار تراکنش‌ها و original_transaction_id و Audit بررسی شوند.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvhz",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvhz",
+      "clickup_status": "in progress"
+    },
+    {
+      "id": "H26",
+      "day": 9,
+      "estimate_hours": 2,
+      "title": "آزمون دسترسی، فایل و امنیت نشست",
+      "references": "Tech §۱۲ و §۱۴",
+      "depends_on": [
+        "H24"
+      ],
+      "scope": "دسترسی متقاطع و کاربر غیرفعال، CSRF، refresh replay، رمز موقت منقضی، فایل مخرب/بزرگ و رسید خصوصی؛ بررسی log بدون secret.",
+      "acceptance": "همه مسیرهای حساس مجوز Backend داشته باشند؛ session باطل قابل استفاده نباشد؛ هیچ رسید خصوصی عمومی و هیچ secret در لاگ نباشد.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvj0",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvj0",
+      "clickup_status": "in progress"
+    },
+    {
+      "id": "H27",
+      "day": 9,
+      "estimate_hours": 3,
+      "title": "ذخیره زمانی رفع باگ و تست مجدد",
+      "references": "PRD §۱۹",
+      "depends_on": [
+        "H25",
+        "H26"
+      ],
+      "scope": "رفع اشکالات مالی، دسترسی و شکست جریان‌های اصلی؛ اجرای مجدد تست‌های مرتبط و بررسی پوشش معیارهای پذیرش.",
+      "acceptance": "باگ بحرانی/شدید باز نباشد؛ تست‌های مالی و دسترسی سبز باشند؛ کسری دامنه پنهان نشود و زمان انتشار در صورت نیاز بازبرآورد شود.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvj1",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvj1",
+      "clickup_status": "in progress"
+    },
+    {
+      "id": "H28",
+      "day": 10,
+      "estimate_hours": 3,
+      "title": "آماده‌سازی استقرار و آزمایش بازیابی",
+      "references": "Tech §۱۳",
+      "depends_on": [
+        "H27"
+      ],
+      "scope": "پیکربندی systemd/Nginx/TLS، env و uploads خصوصی، محدودسازی PostgreSQL و rate limit؛ backup دیتابیس+فایل و restore در محیط موقت؛ release و rollback؛ راهنمای اجرا.",
+      "acceptance": "روی محیط در دسترس health check و production build موفق باشد؛ restore واقعی و تطبیق دفتر موفق باشد؛ دسترسی سرور/دامنه پیش‌نیاز است.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvj2",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvj2",
+      "clickup_status": "in progress"
+    },
+    {
+      "id": "H29",
+      "day": 10,
+      "estimate_hours": 2,
+      "title": "پذیرش نهایی و اجرای کنترل‌شده داده اولیه",
+      "references": "PRD §۱۹؛ Tech §۱۴",
+      "depends_on": [
+        "H28"
+      ],
+      "scope": "تأیید مالک محصول روی داده نمایشی، چک‌لیست پذیرش، بررسی فایل‌های واقعی قبل از import؛ ثبت نسخه و دستورهای بهره‌برداری.",
+      "acceptance": "پذیرش هر سناریوی اصلی ثبت شود؛ داده واقعی فقط پس از preview و تأیید وارد شود؛ نمونه فایل واقعی و حضور مالک محصول پیش‌نیاز است.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvj3",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvj3",
+      "clickup_status": "in progress"
+    },
+    {
+      "id": "H30",
+      "day": 10,
+      "estimate_hours": 3,
+      "title": "ذخیره انتشار، تحویل و رفع اشکال نهایی",
+      "references": "Tech §۱۳",
+      "depends_on": [
+        "H29"
+      ],
+      "scope": "اعمال اصلاحات نهایی، انتشار کنترل‌شده روی مقصد آماده پس از تأیید انتشار، smoke test، بررسی لاگ و backup، تحویل راهنمای دبیر/ادمین و محدودیت‌های واقعی.",
+      "acceptance": "انتشار فقط با تست‌های ضروری موفق و تأیید مالک انجام شود؛ اگر زیرساخت آماده نیست release قابل استقرار و گزارش مانع تحویل شود، استقرار انجام‌شده گزارش نشود.",
+      "status": "in_progress",
+      "owner_role": "implementation_with_codex_and_product_owner",
+      "clickup_task_id": "1amp9grjvj4",
+      "clickup_task_url": "https://app.clickup.com/t/1amp9grjvj4",
+      "clickup_status": "in progress"
+    }
+  ]
+}

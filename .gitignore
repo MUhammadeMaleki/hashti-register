@@ -1,0 +1,19 @@
+# Local configuration and generated files
+.env
+.env.*
+!.env.example
+.local/
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.ruff_cache/
+**/*.py[cod]
+**/*.egg-info/
+**/node_modules/
+**/.next/
+**/tsconfig.tsbuildinfo
+**/coverage/
+*.log
+
+# The app only uses one Anjoman webfont; keep the full local font package out of Git.
+frontend/src/fonts/anjoman/

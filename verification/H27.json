@@ -1,0 +1,22 @@
+{
+  "task": "H27",
+  "status": "in_progress",
+  "finding": "No confirmed critical or severe product defect in the automated financial, access, and core-flow checks. One order-dependent readiness-log test failure was found and corrected in the test itself; no production code change was needed.",
+  "checks": [
+    "All 75 Backend tests passed on isolated real PostgreSQL schemas after correction",
+    "All 4 Frontend tests, Frontend typecheck, and Backend Ruff passed",
+    "Guest-import plus health tests passed together (7 tests), reproducing and resolving the test-order failure",
+    "TC-001 evidence reconciled: atomic contact/wallet registration, registration without charge, and no automatic settlement after credit or manual adjustment",
+    "No acceptance-checklist criterion remains marked not_implemented or failed"
+  ],
+  "changes": [
+    "backend/tests/test_health.py: assert the exact sanitized warning call instead of relying on suite-wide log capture",
+    "acceptance_checklist.json: mark TC-001 verified with existing test evidence"
+  ],
+  "limits": [
+    "H25 and H26 remain in progress because their H24 prerequisite is not closed",
+    "Production build and visual preview remain deferred at the user's request; therefore H27 is not marked complete",
+    "Automated tests do not prove the absence of every production or deployment defect",
+    "The Starlette/httpx deprecation warning remains non-failing"
+  ]
+}
