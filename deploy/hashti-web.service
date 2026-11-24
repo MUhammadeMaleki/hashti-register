@@ -9,7 +9,7 @@ Group=hashti
 WorkingDirectory=/srv/hashti/current/frontend
 EnvironmentFile=/etc/hashti/hashti.env
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/npm run start
+ExecStart=/usr/local/bin/npm run start
 Restart=on-failure
 RestartSec=3
 UMask=0077
