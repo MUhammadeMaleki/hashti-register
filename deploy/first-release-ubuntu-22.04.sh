@@ -49,8 +49,9 @@ UV_PYTHON_INSTALL_DIR=/opt/hashti/python /opt/hashti/uv/bin/uv venv --python 3.1
 ln -s "$release" /srv/hashti/current
 install -d -m 0700 -o hashti -g hashti "$release/frontend/.next/cache"
 chown -R root:root "$release"
+chmod -R a+rX "$release"
 chown -R hashti:hashti "$release/frontend/.next/cache"
-chmod 0755 "$release" "$release/backend" "$release/frontend"
+chmod -R go-rwx "$release/frontend/.next/cache"
 
 install -m 0644 "$release/deploy/hashti-api.service" /etc/systemd/system/hashti-api.service
 install -m 0644 "$release/deploy/hashti-web.service" /etc/systemd/system/hashti-web.service
