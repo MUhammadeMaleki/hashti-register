@@ -28,6 +28,9 @@ sed "s/CHANGE_ME.example.com/$domain/g" \
   /srv/hashti/current/deploy/nginx.conf.example > /etc/nginx/sites-available/hashti
 nginx -t
 systemctl reload nginx
+install -d -m 0755 /etc/letsencrypt/renewal-hooks/deploy
+install -m 0755 "$(dirname "$0")/certbot-renew-nginx.sh" \
+  /etc/letsencrypt/renewal-hooks/deploy/hashti-nginx-reload.sh
 curl --fail --silent --show-error --resolve "$domain:443:127.0.0.1" \
   "https://$domain/api/health/ready"
 echo "HTTPS ready for $domain"
