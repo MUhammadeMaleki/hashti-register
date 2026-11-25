@@ -6,7 +6,7 @@ import { Button, Card } from "@/components/ui";
 import { EventOrders } from "@/components/events/event-orders";
 import { EventSettlement } from "@/components/events/event-settlement";
 import { errorMessage } from "@/lib/api";
-import { formatToman } from "@/lib/format";
+import { formatToman, persianDigits } from "@/lib/format";
 import { registrationsApi, type Attendance, type EventRegistration } from "@/lib/registrations";
 import styles from "./event-attendance-table.module.css";
 
@@ -80,7 +80,7 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
       <th>بدهی</th><th>اعتبار</th><th>رسید همین هشتی</th><th>سفارش‌ها</th><th>عملیات</th></tr></thead><tbody>
       {rows.map((row) => <Fragment key={row.id}><tr>
         <td><Link className={`text-link ${styles.guestName}`} href={`/panel/guests/${row.guest_id}`}>
-          {row.first_name} {row.last_name}</Link></td><td dir="ltr">{row.phone}</td>
+          {row.first_name} {row.last_name}</Link></td><td dir="ltr">{persianDigits(row.phone)}</td>
         <td>{row.status === "active" ? "فعال" : "لغوشده"}</td>
         <td><select className={styles.attendanceSelect} aria-label={`حضور ${row.first_name} ${row.last_name}`}
           value={row.attendance} disabled={cancelled || row.status !== "active" || busyId !== null}

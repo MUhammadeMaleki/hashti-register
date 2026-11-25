@@ -138,6 +138,12 @@ export function EventEditor({ eventId }: { eventId?: number }) {
         !form.title.trim()) {
       setError("شمارهٔ مثبت و عنوان رویداد الزامی‌اند."); return;
     }
+    if ((!eventId && (!Number.isSafeInteger(Number(form.entry_fee)) ||
+        Number(form.entry_fee) < 0 || form.entry_fee === "")) ||
+        (form.capacity !== "" && (!Number.isSafeInteger(Number(form.capacity)) ||
+        Number(form.capacity) < 0))) {
+      setError("مبلغ ورودی و ظرفیت باید عدد صحیح نامنفی باشند."); return;
+    }
     if (form.event_date && !jalaliToIso(form.event_date)) {
       setError("تاریخ شمسی معتبر نیست؛ نمونه: ۱۴۰۵/۰۹/۰۲."); return;
     }
@@ -327,14 +333,16 @@ export function EventEditor({ eventId }: { eventId?: number }) {
         <div className={styles.sectionIntro}><span>۰۳</span><div><h3>میزبانی و ثبت‌نام</h3><p>ظرفیت، مبلغ ورودی و وضعیت ثبت‌نام را تنظیم کنید.</p></div></div>
       <div className={styles.hostingGrid}><Field id="hosts" label="میزبان یا میزبانان" value={form.hosts}
         onChange={(e) => set("hosts", e.target.value)} />
-        <Field id="capacity" label="ظرفیت (اختیاری)" type="number" min={0}
-          value={form.capacity} onChange={(e) => set("capacity", e.target.value)} />
+        <Field id="capacity" label="ظرفیت (اختیاری)" inputMode="numeric" pattern="[۰-۹]*"
+          value={persianDigits(form.capacity)} onChange={(e) => set("capacity",
+            latinDigits(e.target.value).replace(/[^0-9]/g, ""))} />
         <div className="field"><label htmlFor="registration-status">ثبت‌نام</label>
           <select id="registration-status" value={form.registration_status}
             onChange={(e) => set("registration_status", e.target.value as Form["registration_status"])}>
             <option value="closed">بسته</option><option value="open">باز</option></select></div></div>
-      {!eventId && <div className={styles.entryFeeField}><Field id="entry-fee" label="ورودی (تومان)" type="number" min={0}
-        value={form.entry_fee} onChange={(e) => set("entry_fee", e.target.value)} required /></div>}
+      {!eventId && <div className={styles.entryFeeField}><Field id="entry-fee" label="ورودی (تومان)"
+        inputMode="numeric" pattern="[۰-۹]*" value={persianDigits(form.entry_fee)}
+        onChange={(e) => set("entry_fee", latinDigits(e.target.value).replace(/[^0-9]/g, ""))} required /></div>}
       <div className="field"><label htmlFor="public-note">یادداشت عمومی</label><textarea
         id="public-note" rows={3} value={form.public_note}
         onChange={(e) => set("public_note", e.target.value)} /></div>
@@ -366,8 +374,9 @@ export function EventEditor({ eventId }: { eventId?: number }) {
           onClick={() => changeCancellation(false)}>لغو هشتی و ثبت‌نام‌های فعال</Button>}
     </Card>
     <Card title="هزینهٔ ورودی"><p className="muted">تغییر مبلغ روی هشتی‌نشین‌های حاضر و غایب با هزینه اعمال می‌شود؛ مازاد تسویه به کیف پول برمی‌گردد.</p>
-      <div className="field-row"><Field id="new-entry-fee" label="ورودی جدید (تومان)" type="number" min={0}
-        value={feeInput} onChange={(e) => setFeeInput(e.target.value)} />
+      <div className="field-row"><Field id="new-entry-fee" label="ورودی جدید (تومان)"
+        inputMode="numeric" pattern="[۰-۹]*" value={persianDigits(feeInput)}
+        onChange={(e) => setFeeInput(latinDigits(e.target.value).replace(/[^0-9]/g, ""))} />
         <Button type="button" className="secondary" disabled={busy || event?.is_cancelled}
           onClick={saveEntryFee}>ذخیره ورودی</Button></div></Card></div>}
     {eventId && <EventRegistrationManager eventId={eventId}
