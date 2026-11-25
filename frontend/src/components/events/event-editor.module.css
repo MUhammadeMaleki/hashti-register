@@ -26,6 +26,11 @@
 .scheduleGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; align-items:start; }
 .scheduleBlock { display:grid; align-content:start; gap:.8rem; min-width:0; min-height:100%; padding:1rem; border:1px solid #d5e6ee; border-radius:.9rem; background:#f5fafc; }
 .scheduleBlock :global(.field-row) { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+.mediaGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; padding:1.2rem 0; border-top:1px solid #e3edf2; border-bottom:1px solid #e3edf2; }
+.supportSection { display:grid; align-content:start; gap:.8rem; min-width:0; padding:1rem; border:1px solid #d5e6ee; border-radius:.9rem; background:#f5fafc; }
+.supportSection :global(.muted) { margin:0; color:#678094; font-size:.76rem; }
+.supportSection :global(.checkbox-grid) { margin:0; }
+.supportSection :global(.field input[type="file"]) { max-width:100%; padding:.5rem; font-size:.76rem; }
 .saveBar { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding-top:1.2rem; }
 .saveBar p { max-width:32rem; margin:0; color:#678094; font-size:.76rem; }
 .saveBar :global(.button.primary) { min-width:11rem; min-height:3rem; background:#ff7700; color:#101827; font-weight:900; box-shadow:0 4px 0 #101827; }
@@ -33,5 +38,5 @@
 .creationPage :global(.checkbox-grid) { margin:1rem 0 0; }
 .creationPage :global(.checkbox-item) { border-color:#d4e6ee; background:#f6fafc; }
 .creationPage :global(.poster-preview) { aspect-ratio:1; width:min(220px,100%); height:auto; object-fit:cover; }
-@media(max-width:850px) { .scheduleGrid { grid-template-columns:1fr; } }
+@media(max-width:850px) { .scheduleGrid,.mediaGrid { grid-template-columns:1fr; } }
 @media(max-width:600px) { .creationHero { align-items:start; flex-direction:column; min-height:0; gap:1rem; padding:1.2rem; } .creationHero h2 { font-size:1.7rem; } .creationPage :global(.card) { padding:1rem; } .formSection { padding:1.15rem 0; } .creationPage .formSection :global(.field-row),.creationPage .formSection:nth-of-type(3) :global(.field-row),.scheduleBlock :global(.field-row) { grid-template-columns:1fr !important; } .scheduleBlock { padding:.8rem; } .saveBar { align-items:stretch; flex-direction:column; } .saveBar :global(.button.primary) { width:100%; } }

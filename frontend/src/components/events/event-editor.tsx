@@ -232,6 +232,31 @@ export function EventEditor({ eventId }: { eventId?: number }) {
   }
 
   if (loading) return <p role="status">در حال دریافت اطلاعات رویداد…</p>;
+  const posterFields = <>
+    {event?.poster_url && <img className="poster-preview" src={event.poster_url}
+      alt={`پوستر ${event.title}`} />}
+    <div className="field"><label htmlFor="event-poster">تصویر پوستر (حداکثر ۵ مگابایت)</label>
+      <input id="event-poster" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+        onChange={(change) => setPosterFile(change.target.files?.[0] ?? null)} />
+      <small>{eventId ? "JPG، PNG، WebP، HEIC یا HEIF؛ پس از انتخاب، بارگذاری پوستر را بزنید." :
+        "پوستر اختیاری است و همراه با ساخت هشتی بارگذاری می‌شود."}</small></div>
+    {eventId && <Button type="button" className="secondary"
+      disabled={!posterFile || busy || event?.is_cancelled}
+      onClick={uploadPoster}>بارگذاری پوستر</Button>}
+  </>;
+  const secretaryFields = <>
+    <p className="muted">هنگام ساخت، دبیر ایجادکننده خودکار اضافه می‌شود.
+      حداقل یک دبیر فعال باید باقی بماند.</p>
+    <div className="checkbox-grid">{secretaries.map((person) =>
+      <label key={person.id} className="checkbox-item"><input type="checkbox"
+        checked={selected.includes(person.id)} onChange={() => toggleSecretary(person.id)} />
+        {person.full_name}</label>)}</div>
+    {secretaries.length === 0 && <p className="muted">دبیر فعالی وجود ندارد.</p>}
+    {event?.secretaries.filter((person) => !person.is_active).map((person) =>
+      <p className="muted" key={person.id}>{person.full_name} — غیرفعال؛ انتساب تاریخی حفظ می‌شود.</p>)}
+    {eventId && <Button type="button" className="secondary" disabled={busy}
+      onClick={saveSecretaries}>ذخیره دبیران</Button>}
+  </>;
   return <div className={`editor-stack ${!eventId ? styles.creationPage : ""}`}>
     <div className={`section-heading ${!eventId ? styles.creationHero : ""}`}><div>
       {!eventId && <span className={styles.heroEyebrow}>پنل مدیریت / ساخت هشتی</span>}
@@ -308,6 +333,18 @@ export function EventEditor({ eventId }: { eventId?: number }) {
         id="public-note" rows={3} value={form.public_note}
         onChange={(e) => set("public_note", e.target.value)} /></div>
       </section>
+      {!eventId && <div className={styles.mediaGrid}>
+        <section className={styles.supportSection}>
+          <div className={styles.sectionIntro}><span>۰۴</span><div><h3>پوستر هشتی</h3>
+            <p>تصویری برای معرفی هشتی انتخاب کنید.</p></div></div>
+          {posterFields}
+        </section>
+        <section className={styles.supportSection}>
+          <div className={styles.sectionIntro}><span>۰۵</span><div><h3>دبیران هشتی</h3>
+            <p>افرادی که این هشتی را مدیریت می‌کنند.</p></div></div>
+          {secretaryFields}
+        </section>
+      </div>}
       <div className={styles.saveBar}><p>پس از ساخت، می‌توانید ثبت‌نام‌ها و حضور هشتی‌نشین‌ها را مدیریت کنید.</p>
         <Button className="primary" type="submit" disabled={busy || event?.is_cancelled}>
           {busy ? "در حال ذخیره…" : eventId ? "ذخیره اطلاعات" : "ساخت هشتی"}</Button></div>
@@ -317,35 +354,14 @@ export function EventEditor({ eventId }: { eventId?: number }) {
         value={feeInput} onChange={(e) => setFeeInput(e.target.value)} />
         <Button type="button" className="secondary" disabled={busy || event?.is_cancelled}
           onClick={saveEntryFee}>ذخیره ورودی</Button></div></Card>}
-    <Card title="پوستر رویداد">
-      {event?.poster_url && <img className="poster-preview" src={event.poster_url}
-        alt={`پوستر ${event.title}`} />}
-      <div className="field"><label htmlFor="event-poster">تصویر پوستر (حداکثر ۵ مگابایت)</label>
-        <input id="event-poster" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-          onChange={(change) => setPosterFile(change.target.files?.[0] ?? null)} />
-        <small>{eventId ? "JPG، PNG، WebP، HEIC یا HEIF؛ پس از انتخاب، بارگذاری پوستر را بزنید." :
-          "پوستر اختیاری است و همراه با ساخت رویداد بارگذاری می‌شود."}</small></div>
-      {eventId && <Button type="button" className="secondary"
-        disabled={!posterFile || busy || event?.is_cancelled}
-        onClick={uploadPoster}>بارگذاری پوستر</Button>}
-    </Card>
+    {eventId && <Card title="پوستر رویداد">{posterFields}</Card>}
     {eventId && <EventRegistrationManager eventId={eventId}
       available={event?.registration_status === "open" && !event?.is_cancelled}
       onAdded={() => setAttendanceRefresh((value) => value + 1)} />}
     {eventId && <EventAttendanceTable eventId={eventId} cancelled={event?.is_cancelled ?? false}
       registrationOpen={event?.registration_status === "open"}
       refresh={attendanceRefresh} />}
-    <Card title="دبیران رویداد"><p className="muted">هنگام ساخت، دبیر ایجادکننده خودکار اضافه می‌شود.
-      حداقل یک دبیر فعال باید باقی بماند.</p>
-      <div className="checkbox-grid">{secretaries.map((person) =>
-        <label key={person.id} className="checkbox-item"><input type="checkbox"
-          checked={selected.includes(person.id)} onChange={() => toggleSecretary(person.id)} />
-          {person.full_name}</label>)}</div>
-      {secretaries.length === 0 && <p className="muted">دبیر فعالی وجود ندارد.</p>}
-      {event?.secretaries.filter((person) => !person.is_active).map((person) =>
-        <p className="muted" key={person.id}>{person.full_name} — غیرفعال؛ انتساب تاریخی حفظ می‌شود.</p>)}
-      {eventId && <Button type="button" className="secondary" disabled={busy}
-        onClick={saveSecretaries}>ذخیره دبیران</Button>}</Card>
+    {eventId && <Card title="دبیران رویداد">{secretaryFields}</Card>}
     {eventId && <Card title="حذف رویداد بدون سابقه"><p className="muted">رویداد دارای ثبت‌نام یا پرداخت حذف نمی‌شود.</p>
       <Button type="button" className="danger-button" disabled={busy} onClick={remove}>حذف رویداد</Button></Card>}
   </div>;
