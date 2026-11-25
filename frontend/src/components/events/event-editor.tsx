@@ -8,7 +8,7 @@ import { EventAttendanceTable } from "@/components/events/event-attendance-table
 import { EventRegistrationManager } from "@/components/events/event-registration-manager";
 import { errorMessage } from "@/lib/api";
 import { eventsApi, type EventRecord, type Location, type Secretary } from "@/lib/events";
-import { isoToJalali, jalaliToIso } from "@/lib/format";
+import { isoToJalali, jalaliToIso, latinDigits, persianDigits } from "@/lib/format";
 import styles from "./event-editor.module.css";
 
 type Form = {
@@ -46,7 +46,8 @@ function payload(form: Form) {
     event_number: Number(form.event_number), title: form.title.trim(),
     description: form.description.trim() || null,
     event_date: form.event_date ? jalaliToIso(form.event_date) : null,
-    start_time: form.time_mode === "exact" ? form.start_time || null : null,
+    start_time: form.time_mode === "exact" && form.start_time ?
+      form.start_time.padStart(5, "0") : null,
     time_text: form.time_mode === "approximate" ? form.time_text.trim() || null : null,
     time_mode: form.time_mode,
     location_id: form.location_mode === "exact" && form.location_id ?
@@ -139,6 +140,12 @@ export function EventEditor({ eventId }: { eventId?: number }) {
     }
     if (form.event_date && !jalaliToIso(form.event_date)) {
       setError("تاریخ شمسی معتبر نیست؛ نمونه: ۱۴۰۵/۰۹/۰۲."); return;
+    }
+    if (form.time_mode === "exact") {
+      const time = /^(\d{1,2}):(\d{2})$/.exec(form.start_time);
+      if (!time || Number(time[1]) > 23 || Number(time[2]) > 59) {
+        setError("ساعت شروع معتبر نیست؛ نمونه: ۱۷:۳۰."); return;
+      }
     }
     if (posterFile && posterFile.size > 5 * 1024 * 1024) {
       setError("حجم پوستر باید کمتر از ۵ مگابایت باشد."); return;
@@ -289,13 +296,15 @@ export function EventEditor({ eventId }: { eventId?: number }) {
       {form.time_mode === "exact" && <div className={styles.exactTimeGroup}>
         <div className={`field-row ${styles.exactTimeFields}`}><Field id="event-date" label="تاریخ برگزاری (شمسی)"
         inputMode="numeric" placeholder="۱۴۰۵/۰۹/۰۲"
-        value={form.event_date} onChange={(e) => set("event_date", e.target.value)} required />
-        <Field id="event-time" label="ساعت شروع" type="time" value={form.start_time}
-          onChange={(e) => set("start_time", e.target.value)} required /></div>
+        value={persianDigits(form.event_date)} onChange={(e) => set("event_date", latinDigits(e.target.value))} required />
+        <Field id="event-time" label="ساعت شروع" inputMode="numeric" dir="ltr"
+          placeholder="۱۷:۳۰" pattern="[۰-۹]{1,2}:[۰-۹]{2}" title="نمونه: ۱۷:۳۰"
+          value={persianDigits(form.start_time)}
+          onChange={(e) => set("start_time", latinDigits(e.target.value))} required /></div>
         <small className={styles.scheduleHint}>تاریخ را به شکل سال/ماه/روز بنویسید؛ تاریخ گذشته هم مجاز است.</small>
       </div>}
       {form.time_mode === "approximate" && <Field id="time-text" label="شرح زمان تقریبی"
-        value={form.time_text} onChange={(e) => set("time_text", e.target.value)}
+        value={persianDigits(form.time_text)} onChange={(e) => set("time_text", latinDigits(e.target.value))}
         hint="تاریخ یا ساعت حدودی، یا «در حال هماهنگی» را آزادانه بنویسید." required />}
       </div><div className={styles.scheduleBlock}>
       <div className="field"><label htmlFor="location-mode">نحوهٔ اعلام مکان</label>
@@ -316,16 +325,16 @@ export function EventEditor({ eventId }: { eventId?: number }) {
       </section>
       <section className={styles.formSection}>
         <div className={styles.sectionIntro}><span>۰۳</span><div><h3>میزبانی و ثبت‌نام</h3><p>ظرفیت، مبلغ ورودی و وضعیت ثبت‌نام را تنظیم کنید.</p></div></div>
-      <div className="field-row"><Field id="hosts" label="میزبان یا میزبانان" value={form.hosts}
+      <div className={styles.hostingGrid}><Field id="hosts" label="میزبان یا میزبانان" value={form.hosts}
         onChange={(e) => set("hosts", e.target.value)} />
-        <Field id="capacity" label="ظرفیت پیشنهادی (غیرالزام‌آور)" type="number" min={0}
-          value={form.capacity} onChange={(e) => set("capacity", e.target.value)} /></div>
-      <div className="field-row">{!eventId && <Field id="entry-fee" label="ورودی (تومان)" type="number" min={0}
-        value={form.entry_fee} onChange={(e) => set("entry_fee", e.target.value)} required />}
+        <Field id="capacity" label="ظرفیت (اختیاری)" type="number" min={0}
+          value={form.capacity} onChange={(e) => set("capacity", e.target.value)} />
         <div className="field"><label htmlFor="registration-status">ثبت‌نام</label>
           <select id="registration-status" value={form.registration_status}
             onChange={(e) => set("registration_status", e.target.value as Form["registration_status"])}>
             <option value="closed">بسته</option><option value="open">باز</option></select></div></div>
+      {!eventId && <div className={styles.entryFeeField}><Field id="entry-fee" label="ورودی (تومان)" type="number" min={0}
+        value={form.entry_fee} onChange={(e) => set("entry_fee", e.target.value)} required /></div>}
       <div className="field"><label htmlFor="public-note">یادداشت عمومی</label><textarea
         id="public-note" rows={3} value={form.public_note}
         onChange={(e) => set("public_note", e.target.value)} /></div>

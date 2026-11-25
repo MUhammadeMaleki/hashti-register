@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Button, Card, Field } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
+import { latinDigits, persianDigits } from "@/lib/format";
 import { guestsApi, type GuestSummary } from "@/lib/guests";
 import { registrationsApi, type RegistrationMember } from "@/lib/registrations";
 import styles from "./event-registration-manager.module.css";
@@ -28,7 +29,7 @@ export function EventRegistrationManager({ eventId, available, onAdded }: {
     let active = true;
     const timer = window.setTimeout(() => {
       setSearching(true);
-      guestsApi.list(query.trim()).then((page) => {
+      guestsApi.list(latinDigits(query.trim())).then((page) => {
         if (active) setMatches(page.items);
       }).catch((caught) => { if (active) setError(errorMessage(caught)); })
         .finally(() => { if (active) setSearching(false); });
@@ -75,7 +76,7 @@ export function EventRegistrationManager({ eventId, available, onAdded }: {
           role="combobox" aria-autocomplete="list" aria-controls="registration-guest-results"
           aria-expanded={resultsOpen && selected === null && query.trim().length >= 2}
           onFocus={() => setResultsOpen(true)}
-          onChange={(event) => { setQuery(event.target.value); setSelected(null);
+          onChange={(event) => { setQuery(persianDigits(latinDigits(event.target.value))); setSelected(null);
             setMatches([]); setSearching(event.target.value.trim().length >= 2);
             setResultsOpen(true); setError(""); }} />
         {resultsOpen && selected === null && query.trim().length >= 2 &&
@@ -83,9 +84,9 @@ export function EventRegistrationManager({ eventId, available, onAdded }: {
             {searching ? <p>در حال جست‌وجو…</p> : matches.length ? matches.map((guest) =>
               <button type="button" role="option" aria-selected={false} key={guest.id}
                 className={styles.result} onClick={() => { setSelected(guest.id);
-                  setQuery(`${guest.first_name} ${guest.last_name} — ${guest.phone}`);
+                  setQuery(`${guest.first_name} ${guest.last_name} — ${persianDigits(guest.phone)}`);
                   setMatches([]); setResultsOpen(false); }}>
-                <strong>{guest.first_name} {guest.last_name}</strong><span dir="ltr">{guest.phone}</span>
+                <strong>{guest.first_name} {guest.last_name}</strong><span dir="ltr">{persianDigits(guest.phone)}</span>
               </button>) : <p>هشتی‌نشینی پیدا نشد.</p>}
           </div>}
         </div>
