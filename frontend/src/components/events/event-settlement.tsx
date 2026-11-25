@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Button, Field } from "@/components/ui";
+import { Button, MoneyField } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
 import { formatToman } from "@/lib/format";
 import { guestsApi } from "@/lib/guests";
@@ -37,9 +37,8 @@ export function EventSettlement({ row, onChanged }: {
       {" "}· قابل تسویه: {formatToman(available)}</p>
     {available <= 0 ? <p className="muted">برای تسویه، ابتدا کیف پول مخاطب باید شارژ شود.</p> :
       <form className="field-row" onSubmit={submit}>
-        <Field id={`event-settlement-${row.id}`} label="مبلغ تسویه (تومان)"
-          type="number" min={1} max={available} value={amount}
-          onChange={(event) => setAmount(event.target.value)} required />
+        <MoneyField id={`event-settlement-${row.id}`} label="مبلغ تسویه (تومان)"
+          value={amount} onValueChange={setAmount} required />
         <Button type="submit" className="secondary" disabled={busy}>
           {busy ? "در حال ثبت…" : "تسویه با کیف پول"}</Button>
       </form>}

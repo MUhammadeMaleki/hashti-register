@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { Button, Card, Field } from "@/components/ui";
+import { Button, Card, Field, MoneyField } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
 import { formatToman } from "@/lib/format";
 import { guestsApi, type GuestProfile } from "@/lib/guests";
@@ -99,8 +99,8 @@ export function GuestFinance({ profile, onChanged }: {
         <select id="adjust-direction" value={direction} onChange={(event) =>
           setDirection(event.target.value as "increase" | "decrease")}>
           <option value="increase">افزایش</option><option value="decrease">کاهش</option>
-        </select></div><Field id="adjust-amount" label="مبلغ (تومان)" type="number" min={1}
-        value={adjustAmount} onChange={(event) => setAdjustAmount(event.target.value)} required /></div>
+        </select></div><MoneyField id="adjust-amount" label="مبلغ (تومان)"
+        value={adjustAmount} onValueChange={setAdjustAmount} required /></div>
       <Field id="adjust-note" label="توضیح اجباری" value={note}
         onChange={(event) => setNote(event.target.value)} required />
       <Button type="submit" className="secondary" disabled={busy}>ثبت اصلاح</Button>
@@ -117,9 +117,9 @@ export function GuestFinance({ profile, onChanged }: {
     {chosen && <><p>بدهی: {formatToman(chosen.outstanding_total)} · موجودی:
       {" "}{formatToman(profile.wallet_balance ?? 0)} · قابل تسویه:
       {" "}{formatToman(Math.min(chosen.outstanding_total, profile.wallet_balance ?? 0))}</p>
-      <form className="form-stack" onSubmit={settle}><Field id="settle-amount"
-        label="مبلغ تسویه (تومان)" type="number" min={1} value={settleAmount}
-        onChange={(event) => setSettleAmount(event.target.value)} required />
+      <form className="form-stack" onSubmit={settle}><MoneyField id="settle-amount"
+        label="مبلغ تسویه (تومان)" value={settleAmount}
+        onValueChange={setSettleAmount} required />
         <Button type="submit" className="secondary" disabled={busy || chosen.event.is_cancelled ||
           Math.min(chosen.outstanding_total, profile.wallet_balance ?? 0) <= 0}>
           تسویه با کیف پول</Button></form>
@@ -130,8 +130,8 @@ export function GuestFinance({ profile, onChanged }: {
             .map((item) => <option value={item.id} key={item.id}>#{item.id.toLocaleString("fa-IR")} · فعال:
               {" "}{formatToman(item.active_amount)}</option>)}</select></div>
       {refundId !== null && <form className="form-stack" onSubmit={refund}>
-        <Field id="refund-amount" label="مبلغ برگشت (تومان)" type="number" min={1}
-          value={refundAmount} onChange={(event) => setRefundAmount(event.target.value)} required />
+        <MoneyField id="refund-amount" label="مبلغ برگشت (تومان)"
+          value={refundAmount} onValueChange={setRefundAmount} required />
         <Field id="refund-reason" label="دلیل برگشت" value={reason}
           onChange={(event) => setReason(event.target.value)} required />
         <Button type="submit" className="secondary" disabled={busy}>ثبت برگشت</Button>

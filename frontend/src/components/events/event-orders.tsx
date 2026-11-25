@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { Button, Field } from "@/components/ui";
+import { Button, Field, MoneyField } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
 import { formatToman } from "@/lib/format";
 import { registrationsApi, type Charge, type EventRegistration } from "@/lib/registrations";
@@ -69,8 +69,8 @@ export function EventOrders({ row, cancelled, refresh, onChanged }: {
     {canCreate && <form onSubmit={save} className="form-stack">
       <div className="field-row"><Field id={`order-description-${row.id}`} label="شرح سفارش"
         value={description} onChange={(event) => setDescription(event.target.value)} required />
-        <Field id={`order-amount-${row.id}`} label="مبلغ (تومان)" type="number" min={1}
-          value={amount} onChange={(event) => setAmount(event.target.value)} required /></div>
+        <MoneyField id={`order-amount-${row.id}`} label="مبلغ (تومان)"
+          value={amount} onValueChange={setAmount} required /></div>
       <div><Button type="submit" className="primary" disabled={busy}>
         {editing === null ? "ثبت سفارش" : "ذخیره سفارش"}</Button>{" "}
         {editing !== null && <Button type="button" className="secondary" onClick={reset}>

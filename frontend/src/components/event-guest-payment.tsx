@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
-import { Button, Field } from "@/components/ui";
+import { Button, Field, MoneyField } from "@/components/ui";
 import { useSession } from "@/hooks/use-session";
 import { errorMessage } from "@/lib/api";
 import { financeApi, type MyFinance } from "@/lib/finance";
@@ -120,8 +120,8 @@ export function EventGuestPayment({ eventId, cardNumber, accountHolder, onClose 
           <p className="muted">شماره کارت هنوز در تنظیمات ثبت نشده است.</p>}
         <form className="form-stack event-receipt-form" onSubmit={submitReceipt}>
           <h3>ثبت رسید واریز برای این هشتی</h3>
-          <Field id={`event-payment-amount-${eventId}`} label="مبلغ واریز (تومان)" type="number"
-            min={1} value={amount} onChange={(event) => setAmount(event.target.value)} required />
+          <MoneyField id={`event-payment-amount-${eventId}`} label="مبلغ واریز (تومان)"
+            value={amount} onValueChange={setAmount} required />
           <Field id={`event-payment-code-${eventId}`} label="کد پیگیری (اختیاری)" maxLength={200}
             value={trackingCode} onChange={(event) => setTrackingCode(event.target.value)} />
           <div className="field event-receipt-file"><span>تصویر رسید (اختیاری)</span>
@@ -150,9 +150,8 @@ export function EventGuestPayment({ eventId, cardNumber, accountHolder, onClose 
             registration.debt <= 0 ? <p>{registration.attendance === "pending" ?
               "بعد از ثبت حضور و ایجاد بدهی، امکان تسویه فعال می‌شود." : "بدهی تسویه‌نشده‌ای ندارید."}</p> :
               <form className="form-stack" onSubmit={settle}>
-                <Field id={`event-settlement-${eventId}`} label="مبلغ تسویه (تومان)" type="number"
-                  min={1} max={Math.min(registration.debt, finance.wallet_balance)}
-                  value={settlementAmount} onChange={(event) => setSettlementAmount(event.target.value)} required />
+                <MoneyField id={`event-settlement-${eventId}`} label="مبلغ تسویه (تومان)"
+                  value={settlementAmount} onValueChange={setSettlementAmount} required />
                 <Button type="submit" className="primary" disabled={busy || finance.wallet_balance <= 0}>
                   تسویه با کیف پول</Button>
                 {finance.wallet_balance <= 0 && <p className="muted">موجودی کافی نیست؛ ابتدا کیف پول را شارژ کنید.</p>}

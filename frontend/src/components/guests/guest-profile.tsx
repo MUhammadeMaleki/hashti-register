@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { AppShell } from "@/components/app-shell";
-import { Button, Card, Field } from "@/components/ui";
+import { Button, Card, Field, MoneyField } from "@/components/ui";
 import { GuestFinance } from "@/components/guests/guest-finance";
 import { api, errorMessage } from "@/lib/api";
 import { formatJalali, formatToman, persianDigits } from "@/lib/format";
@@ -171,9 +171,9 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
           onChange={(event) => set("gender", event.target.value || null)} />
           <Field id="education" label="تحصیلات" value={form.education ?? ""}
             onChange={(event) => set("education", event.target.value || null)} /></div>
-        <Field id="debt-ceiling" label="سقف بدهی اختصاصی (تومان)" type="number" min={0}
-          value={form.debt_ceiling ?? ""} onChange={(event) => set("debt_ceiling",
-            event.target.value === "" ? null : Number(event.target.value))} />
+        <MoneyField id="debt-ceiling" label="سقف بدهی اختصاصی (تومان)"
+          value={form.debt_ceiling ?? ""} onValueChange={(value) => set("debt_ceiling",
+            value === "" ? null : Number(value))} />
         <div className="field"><label htmlFor="internal-note">یادداشت عمومی داخلی</label>
           <textarea id="internal-note" rows={3} value={form.internal_note ?? ""}
             onChange={(event) => set("internal_note", event.target.value || null)} /></div>
