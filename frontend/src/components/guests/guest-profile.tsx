@@ -7,7 +7,7 @@ import { AppShell } from "@/components/app-shell";
 import { Button, Card, Field, MoneyField } from "@/components/ui";
 import { GuestFinance, GuestWalletAdjustment } from "@/components/guests/guest-finance";
 import { api, errorMessage } from "@/lib/api";
-import { formatJalali, formatToman, persianDigits } from "@/lib/format";
+import { formatJalali, formatToman, latinDigits, persianDigits } from "@/lib/format";
 import { guestsApi, type GuestInput, type GuestProfile, type InterestTag } from "@/lib/guests";
 import styles from "./guest-profile.module.css";
 
@@ -36,6 +36,7 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [tempPassword, setTempPassword] = useState("");
+  const [visibleRegistrations, setVisibleRegistrations] = useState(6);
   const canRemove = !!profile && !profile.has_account && !profile.registrations.length &&
     !profile.payments.length && !profile.notes.length &&
     !profile.wallet_transactions.length && !profile.wallet_balance;
@@ -171,52 +172,9 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
         <div><span>ماندهٔ بدهی پس از اعتبار</span><strong>{formatToman(profile.finance_overview.net_debt)}</strong></div>
         <div><span>هشتی‌های ثبت‌نام‌شده</span><strong>{profile.registrations.length.toLocaleString("fa-IR")}</strong></div>
       </div>
-      <nav className={styles.quickNav} aria-label="بخش‌های پرونده">
-        <a href="#guest-information">اطلاعات و علاقه‌مندی‌ها</a>
-        <a href="#guest-registrations">هشتی‌ها و حضور</a>
-        <a href="#guest-wallet">کیف پول و پیگیری</a>
-        <a href="#guest-finance">گردش مالی و تسویه</a>
-      </nav>
-      <div id="guest-information" className={styles.sectionCard}><Card title="اطلاعات هشتی‌نشین">
-      <div className={styles.informationGrid}><form className="form-stack" onSubmit={save}>
-        <div className="field-row"><Field id="first-name" label="نام" required value={form.first_name}
-          onChange={(event) => set("first_name", event.target.value)} />
-          <Field id="last-name" label="نام خانوادگی" required value={form.last_name}
-            onChange={(event) => set("last_name", event.target.value)} /></div>
-        <div className="field-row"><Field id="phone" label="شماره موبایل" required
-          inputMode="tel" value={form.phone} onChange={(event) => set("phone", event.target.value)} />
-          <Field id="age" label="سن" type="number" min={0} max={130}
-            value={form.age ?? ""} onChange={(event) => set("age",
-              event.target.value === "" ? null : Number(event.target.value))} /></div>
-        <div className="field-row"><Field id="gender" label="جنسیت" value={form.gender ?? ""}
-          onChange={(event) => set("gender", event.target.value || null)} />
-          <Field id="education" label="تحصیلات" value={form.education ?? ""}
-            onChange={(event) => set("education", event.target.value || null)} /></div>
-        <MoneyField id="debt-ceiling" label="سقف بدهی اختصاصی (تومان)"
-          value={form.debt_ceiling ?? ""} onValueChange={(value) => set("debt_ceiling",
-            value === "" ? null : Number(value))} />
-        <div className="field"><label htmlFor="internal-note">یادداشت عمومی داخلی</label>
-          <textarea id="internal-note" rows={3} value={form.internal_note ?? ""}
-            onChange={(event) => set("internal_note", event.target.value || null)} /></div>
-        <Button type="submit" className="primary" disabled={busy}>ذخیرهٔ اطلاعات</Button>
-      </form>
-      <aside id="guest-interests" className={styles.interestsPanel}>
-        <h3>علاقه‌مندی‌ها</h3>
-        <div className="checkbox-grid">{allTags.map((tag) =>
-        <label className="checkbox-item" key={tag.id}><input type="checkbox"
-          checked={selectedTags.includes(tag.id)} onChange={() => setSelectedTags((previous) =>
-            previous.includes(tag.id) ? previous.filter((id) => id !== tag.id) : [...previous, tag.id])} />
-          {tag.name}</label>)}</div>
-        <Button type="button" className="secondary" disabled={busy} onClick={saveTags}>
-          ذخیرهٔ علاقه‌مندی‌ها</Button>
-        <form className="row-actions form-stack" onSubmit={addTag}>
-          <Field id="new-tag" label="برچسب تازه" value={newTag}
-            onChange={(event) => setNewTag(event.target.value)} />
-          <Button type="submit" className="secondary" disabled={busy}>ساخت برچسب</Button>
-        </form>
-      </aside></div></Card></div>
-      <div id="guest-registrations" className={styles.sectionCard}><Card title="هشتی‌ها و وضعیت حضور">
-        <div className={styles.registrationList}>{profile.registrations.map((item) =>
+      <div className={styles.profileGrid}>
+      <div id="guest-registrations" className={`${styles.sectionCard} ${styles.registrationsPanel}`}><Card title="هشتی‌ها و وضعیت حضور">
+        <div className={styles.registrationList}>{profile.registrations.slice(0, visibleRegistrations).map((item) =>
           <details className={styles.registration} key={item.id}>
             <summary><span className={styles.registrationNumber}>هشتی {item.event.event_number.toLocaleString("fa-IR")}</span>
               <span className={styles.registrationTitle}><strong>{item.event.title}</strong>
@@ -249,7 +207,62 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
             </div>
           </details>)}</div>
         {!profile.registrations.length && <p className="muted">هنوز ثبت‌نامی ندارد.</p>}
+        {profile.registrations.length > visibleRegistrations && <Button type="button"
+          className={`secondary ${styles.showMore}`} onClick={() => setVisibleRegistrations((count) => count + 6)}>
+          نمایش هشتی‌های بیشتر · {persianDigits(String(profile.registrations.length - visibleRegistrations))} مورد باقی‌مانده
+        </Button>}
       </Card></div>
+      <div id="guest-information" className={`${styles.sectionCard} ${styles.identityPanel}`}><Card title="اطلاعات و علاقه‌مندی‌ها">
+      <dl className={styles.profileFacts}>
+        <div><dt>شماره موبایل</dt><dd dir="ltr">{persianDigits(profile.phone)}</dd></div>
+        <div><dt>سن</dt><dd>{profile.age === null ? "ثبت نشده" : persianDigits(String(profile.age))}</dd></div>
+        <div><dt>جنسیت</dt><dd>{profile.gender || "ثبت نشده"}</dd></div>
+        <div><dt>تحصیلات</dt><dd>{profile.education || "ثبت نشده"}</dd></div>
+        <div><dt>سقف بدهی اختصاصی</dt><dd>{profile.debt_ceiling === null ? "سقف عمومی" : formatToman(profile.debt_ceiling)}</dd></div>
+      </dl>
+      <div className={styles.interestSummary}><span>علاقه‌مندی‌ها</span>
+        <div>{profile.tags.length ? profile.tags.map((tag) => <span key={tag.id}>{tag.name}</span>) :
+          <small>هنوز علاقه‌مندی ثبت نشده است.</small>}</div></div>
+      {profile.internal_note && <p className={styles.internalNote}><strong>یادداشت داخلی</strong>{profile.internal_note}</p>}
+      <details className={styles.editPanel}><summary>ویرایش اطلاعات و علاقه‌مندی‌ها <span aria-hidden="true">⌄</span></summary>
+      <div className={styles.informationGrid}><form className="form-stack" onSubmit={save}>
+        <div className="field-row"><Field id="first-name" label="نام" required value={form.first_name}
+          onChange={(event) => set("first_name", event.target.value)} />
+          <Field id="last-name" label="نام خانوادگی" required value={form.last_name}
+            onChange={(event) => set("last_name", event.target.value)} /></div>
+        <div className="field-row"><Field id="phone" label="شماره موبایل" required
+          inputMode="tel" value={persianDigits(form.phone)} onChange={(event) => set("phone", latinDigits(event.target.value))} />
+          <Field id="age" label="سن" type="number" min={0} max={130}
+            value={form.age ?? ""} onChange={(event) => set("age",
+              event.target.value === "" ? null : Number(event.target.value))} /></div>
+        <div className="field-row"><Field id="gender" label="جنسیت" value={form.gender ?? ""}
+          onChange={(event) => set("gender", event.target.value || null)} />
+          <Field id="education" label="تحصیلات" value={form.education ?? ""}
+            onChange={(event) => set("education", event.target.value || null)} /></div>
+        <MoneyField id="debt-ceiling" label="سقف بدهی اختصاصی (تومان)"
+          value={form.debt_ceiling ?? ""} onValueChange={(value) => set("debt_ceiling",
+            value === "" ? null : Number(value))} />
+        <div className="field"><label htmlFor="internal-note">یادداشت عمومی داخلی</label>
+          <textarea id="internal-note" rows={3} value={form.internal_note ?? ""}
+            onChange={(event) => set("internal_note", event.target.value || null)} /></div>
+        <Button type="submit" className="primary" disabled={busy}>ذخیرهٔ اطلاعات</Button>
+      </form>
+      <aside id="guest-interests" className={styles.interestsPanel}>
+        <h3>علاقه‌مندی‌ها</h3>
+        <div className="checkbox-grid">{allTags.map((tag) =>
+        <label className="checkbox-item" key={tag.id}><input type="checkbox"
+          checked={selectedTags.includes(tag.id)} onChange={() => setSelectedTags((previous) =>
+            previous.includes(tag.id) ? previous.filter((id) => id !== tag.id) : [...previous, tag.id])} />
+          {tag.name}</label>)}</div>
+        <Button type="button" className="secondary" disabled={busy} onClick={saveTags}>
+          ذخیرهٔ علاقه‌مندی‌ها</Button>
+        <form className="row-actions form-stack" onSubmit={addTag}>
+          <Field id="new-tag" label="برچسب تازه" value={newTag}
+            onChange={(event) => setNewTag(event.target.value)} />
+          <Button type="submit" className="secondary" disabled={busy}>ساخت برچسب</Button>
+        </form>
+      </aside></div></details></Card></div>
+      </div>
       <div id="guest-wallet" className={styles.activityGrid}>
       <div className={styles.sectionCard}>
         <GuestWalletAdjustment profile={profile} onChanged={refreshFinance} />

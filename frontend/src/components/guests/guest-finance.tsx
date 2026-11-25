@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Button, Card, Field, MoneyField } from "@/components/ui";
 import { SettlementOperations } from "@/components/guests/settlement-operations";
 import { errorMessage } from "@/lib/api";
@@ -63,6 +63,7 @@ export function GuestFinance({ profile, onChanged }: {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [revision, setRevision] = useState(0);
+  const pickerRef = useRef<HTMLDetailsElement>(null);
   const active = profile.registrations.filter((row) => row.status === "active");
   const chosen = active.find((row) => row.id === registrationId);
   const walletValue = Number(settleAmount);
@@ -109,11 +110,18 @@ export function GuestFinance({ profile, onChanged }: {
     {error && <p className="alert error" role="alert">{error}</p>}
     {notice && <p className="alert success" role="status">{notice}</p>}
     <div className={styles.financeAction}>
-    <div className="field"><label htmlFor="finance-registration">ثبت‌نام</label>
-      <select id="finance-registration" value={registrationId ?? ""} onChange={(event) => {
-        setRegistrationId(event.target.value ? Number(event.target.value) : null);
-      }}><option value="">انتخاب هشتی</option>{active.map((row) =>
-        <option key={row.id} value={row.id}>هشتی {row.event.event_number.toLocaleString("fa-IR")} · {row.event.title}</option>)}</select>
+    <div className={styles.financePicker}><span id="finance-registration-label">ثبت‌نام</span>
+      <details ref={pickerRef}><summary aria-labelledby="finance-registration-label">
+        <span>{chosen ? `هشتی ${chosen.event.event_number.toLocaleString("fa-IR")} · ${chosen.event.title}` : "انتخاب هشتی"}</span>
+        <span aria-hidden="true">⌄</span></summary>
+        <div className={styles.financePickerOptions} role="group" aria-label="هشتی‌های ثبت‌نام‌شده">
+          {active.length ? active.map((row) => <button type="button" key={row.id}
+            aria-pressed={row.id === registrationId}
+            onClick={() => { setRegistrationId(row.id); if (pickerRef.current) pickerRef.current.open = false; }}>
+            <strong>هشتی {row.event.event_number.toLocaleString("fa-IR")}</strong>
+            <span>{row.event.title}</span></button>) : <p>ثبت‌نام فعالی برای تسویه وجود ندارد.</p>}
+        </div>
+      </details>
     </div>
     {chosen && <><p>بدهی: {formatToman(chosen.outstanding_total)} · موجودی:
       {" "}{formatToman(profile.wallet_balance ?? 0)} · قابل برداشت از کیف پول:
