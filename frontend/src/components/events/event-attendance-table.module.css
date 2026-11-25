@@ -1,0 +1,75 @@
+.panel {
+  min-width: 0;
+}
+
+.panel :global(.card) {
+  min-width: 0;
+}
+
+.tableScroll {
+  max-width: 100%;
+  border: 1px solid #d7e6ee;
+  border-radius: .8rem;
+}
+
+.table {
+  min-width: 1450px;
+}
+
+.table th,
+.table td {
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.table th {
+  background: #e9f4fa;
+  color: #164663;
+}
+
+.table tbody tr:hover {
+  background: #f6fbfd;
+}
+
+.guestName {
+  display: inline-block;
+  min-width: 11rem;
+  white-space: nowrap;
+}
+
+.attendanceSelect {
+  min-width: 11.5rem;
+  min-height: 2.5rem;
+  padding: .4rem .7rem;
+  border: 1px solid #b9d3e1;
+  border-radius: .6rem;
+  background: #fff;
+  color: #173c56;
+  font: inherit;
+  font-size: .82rem;
+  cursor: pointer;
+}
+
+.attendanceSelect option {
+  font-family: inherit;
+}
+
+.attendanceSelect:focus-visible {
+  outline: 2px solid #0067a5;
+  outline-offset: 2px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: .45rem;
+}
+
+.actions :global(.button) {
+  flex: none;
+  min-height: 2.35rem;
+  padding: .4rem .65rem;
+  font-size: .78rem;
+  white-space: nowrap;
+}

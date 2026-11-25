@@ -8,6 +8,7 @@ import { EventSettlement } from "@/components/events/event-settlement";
 import { errorMessage } from "@/lib/api";
 import { formatToman } from "@/lib/format";
 import { registrationsApi, type Attendance, type EventRegistration } from "@/lib/registrations";
+import styles from "./event-attendance-table.module.css";
 
 const labels: Record<Attendance, string> = {
   pending: "نامشخص", present: "حاضر", absent_kept: "غایب، بدون هزینه",
@@ -69,19 +70,19 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
     finally { setBusyId(null); }
   }
 
-  return <Card title="مهمان‌ها و حضور">
+  return <div className={styles.panel}><Card title="هشتی‌نشین‌ها و حضور">
     <p className="muted">تغییر حضور ممکن است هزینهٔ ورودی ایجاد کند یا اعتبار تسویه‌شده را برگرداند.</p>
     {error && <p className="alert error" role="alert">{error}</p>}
     {notice && <p className="alert success" role="status">{notice}</p>}
     {loading && <p role="status">در حال دریافت مهمان‌ها…</p>}
-    <div className="table-scroll"><table><thead><tr><th>مخاطب</th><th>موبایل</th>
+    <div className={`table-scroll ${styles.tableScroll}`}><table className={styles.table}><thead><tr><th>هشتی‌نشین</th><th>موبایل</th>
       <th>ثبت‌نام</th><th>حضور</th><th>هزینهٔ فعال</th><th>تسویه</th>
       <th>بدهی</th><th>اعتبار</th><th>رسید همین هشتی</th><th>سفارش‌ها</th><th>عملیات</th></tr></thead><tbody>
       {rows.map((row) => <Fragment key={row.id}><tr>
-        <td><Link className="text-link" href={`/panel/guests/${row.guest_id}`}>
+        <td><Link className={`text-link ${styles.guestName}`} href={`/panel/guests/${row.guest_id}`}>
           {row.first_name} {row.last_name}</Link></td><td dir="ltr">{row.phone}</td>
         <td>{row.status === "active" ? "فعال" : "لغوشده"}</td>
-        <td><select className="attendance-select" aria-label={`حضور ${row.first_name} ${row.last_name}`}
+        <td><select className={styles.attendanceSelect} aria-label={`حضور ${row.first_name} ${row.last_name}`}
           value={row.attendance} disabled={cancelled || row.status !== "active" || busyId !== null}
           onChange={(event) => change(row.id, event.target.value as Attendance)}>
           {row.attendance === "pending" && <option value="pending">{labels.pending}</option>}
@@ -102,7 +103,7 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
         <td><Button type="button" className="secondary" onClick={() =>
           setOrdersId((value) => value === row.id ? null : row.id)}>
           {ordersId === row.id ? "بستن" : "مشاهده"}</Button></td>
-        <td><div className="row-actions"><Button type="button" className="secondary"
+        <td><div className={styles.actions}><Button type="button" className="secondary"
           disabled={cancelled || row.status !== "active" || row.debt <= 0 || busyId !== null}
           onClick={() => setSettlementId((value) => value === row.id ? null : row.id)}>
           {settlementId === row.id ? "بستن تسویه" : "تسویه"}
@@ -122,12 +123,12 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
         }} />
       </td></tr>}</Fragment>)}</tbody></table></div>
     {!loading && rows.length === 0 && <p className="muted">هنوز مهمانی ثبت‌نام نکرده است.</p>}
-    <div className="pagination"><span>{total} ثبت‌نام</span>
+    <div className="pagination"><span>{total.toLocaleString("fa-IR")} ثبت‌نام</span>
       {offset > 0 && <Button type="button" className="secondary" onClick={() => {
         setLoading(true); setOffset(Math.max(0, offset - 50)); }}>قبلی</Button>}
       {offset + 50 < total && <Button type="button" className="secondary" onClick={() => {
         setLoading(true); setOffset(offset + 50); }}>بعدی</Button>}
       <Button type="button" className="secondary" onClick={() => {
         setLoading(true); setRevision((value) => value + 1); }}>تازه‌سازی</Button></div>
-  </Card>;
+  </Card></div>;
 }
