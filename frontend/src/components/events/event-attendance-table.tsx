@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Card } from "@/components/ui";
 import { EventOrders } from "@/components/events/event-orders";
 import { EventFinanceDialog } from "@/components/events/event-finance-dialog";
@@ -28,6 +28,7 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
   const [financeId, setFinanceId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const ordersRow = rows.find((row) => row.id === ordersId);
   const financeRow = rows.find((row) => row.id === financeId && row.status === "active");
 
   useEffect(() => {
@@ -79,7 +80,7 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
     <div className={`table-scroll ${styles.tableScroll}`}><table className={styles.table}><thead><tr><th>هشتی‌نشین</th><th>موبایل</th>
       <th>ثبت‌نام</th><th>حضور</th><th>هزینهٔ فعال</th><th>تخفیف</th><th>تسویه</th>
       <th>بدهی</th><th>اعتبار</th><th>رسید همین هشتی</th><th>سفارش‌ها</th><th>عملیات</th></tr></thead><tbody>
-      {rows.map((row) => <Fragment key={row.id}><tr>
+      {rows.map((row) => <tr key={row.id}>
         <td><Link className={`text-link ${styles.guestName}`} href={`/panel/guests/${row.guest_id}`}>
           {row.first_name} {row.last_name}</Link></td><td dir="ltr">{persianDigits(row.phone)}</td>
         <td>{row.status === "active" ? "فعال" : "لغوشده"}</td>
@@ -102,9 +103,8 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
             {formatToman(payment.amount)} · {payment.status === "pending" ? "در انتظار بررسی" :
               payment.status === "approved" ? "تأییدشده" : "ردشده"}</Link>)}
         </div> : <span className="muted">رسیدی ثبت نشده</span>}</td>
-        <td><Button type="button" className="secondary" onClick={() =>
-          setOrdersId((value) => value === row.id ? null : row.id)}>
-          {ordersId === row.id ? "بستن" : "مشاهده"}</Button></td>
+        <td><Button type="button" className="secondary" aria-haspopup="dialog"
+          onClick={() => setOrdersId(row.id)}>مشاهده</Button></td>
         <td><div className={styles.actions}><Button type="button" className="secondary"
           disabled={cancelled || row.status !== "active" ||
             row.debt + row.active_settlements + row.active_discounts <= 0 || busyId !== null}
@@ -115,10 +115,7 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
           لغو ثبت‌نام</Button> : <Button type="button" className="secondary"
           disabled={cancelled || !registrationOpen || busyId !== null}
           onClick={() => changeRegistration(row)}>فعال‌سازی مجدد</Button>}</div></td>
-      </tr>{ordersId === row.id && <tr><td colSpan={12}>
-        <EventOrders row={row} cancelled={cancelled} refresh={revision}
-          onChanged={() => setRevision((value) => value + 1)} />
-      </td></tr>}</Fragment>)}</tbody></table></div>
+      </tr>)}</tbody></table></div>
     {!loading && rows.length === 0 && <p className="muted">هنوز مهمانی ثبت‌نام نکرده است.</p>}
     <div className="pagination"><span>{total.toLocaleString("fa-IR")} ثبت‌نام</span>
       {offset > 0 && <Button type="button" className="secondary" onClick={() => {
@@ -127,7 +124,9 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
         setLoading(true); setOffset(offset + 50); }}>بعدی</Button>}
       <Button type="button" className="secondary" onClick={() => {
         setLoading(true); setRevision((value) => value + 1); }}>تازه‌سازی</Button></div>
-  </Card>{financeRow && !cancelled && <EventFinanceDialog row={financeRow} revision={revision}
+  </Card>{ordersRow && <EventOrders row={ordersRow} cancelled={cancelled} refresh={revision}
+    onChanged={() => setRevision((value) => value + 1)} onDismiss={() => setOrdersId(null)} />}
+  {financeRow && !cancelled && <EventFinanceDialog row={financeRow} revision={revision}
     onChanged={() => setRevision((value) => value + 1)} onDismiss={() => setFinanceId(null)} />}
   </div>;
 }
