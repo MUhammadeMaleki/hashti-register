@@ -257,25 +257,19 @@ export function EventEditor({ eventId }: { eventId?: number }) {
     {eventId && <Button type="button" className="secondary" disabled={busy}
       onClick={saveSecretaries}>ذخیره دبیران</Button>}
   </>;
-  return <div className={`editor-stack ${!eventId ? styles.creationPage : ""}`}>
-    <div className={`section-heading ${!eventId ? styles.creationHero : ""}`}><div>
-      {!eventId && <span className={styles.heroEyebrow}>پنل مدیریت / ساخت هشتی</span>}
-      <h2>{eventId ? "ویرایش رویداد" : "یک هشتی تازه بسازیم"}</h2>
-      <p className="muted">شمارهٔ پیشنهادی قابل تغییر است؛ تکراری‌بودن هنگام ذخیره کنترل می‌شود.</p></div>
+  return <div className={`editor-stack ${styles.editorPage}`}>
+    <div className={`section-heading ${styles.editorHero}`}><div>
+      <span className={styles.heroEyebrow}>پنل مدیریت / {eventId ? "ویرایش هشتی" : "ساخت هشتی"}</span>
+      <h2>{eventId ? "ویرایش هشتی" : "یک هشتی تازه بسازیم"}</h2>
+      <p className="muted">{eventId ? "اطلاعات و ظاهر این هشتی را از همین صفحه به‌روز کنید." :
+        "شمارهٔ پیشنهادی قابل تغییر است؛ تکراری‌بودن هنگام ذخیره کنترل می‌شود."}</p></div>
       <Link className="button secondary" href="/panel/events">بازگشت به هشتی‌ها</Link></div>
     {error && <p role="alert" className="alert error">{error}</p>}
     {notice && <p role="status" className="alert success">{notice}</p>}
     {event?.is_cancelled && <p className="alert error">این رویداد لغو شده است و ویرایش اطلاعات آن فعلاً بسته است.</p>}
-    {eventId && event && <Card title="وضعیت رویداد"><p className="muted">
-      فعال‌سازی مجدد، وضعیت باز/بسته ثبت‌نام و سوابق مالی پیشین را تغییر نمی‌دهد.</p>
-      {event.is_cancelled ? <Button type="button" className="secondary" disabled={busy}
-        onClick={() => changeCancellation(true)}>فعال‌سازی مجدد رویداد</Button> :
-        <Button type="button" className="danger-button" disabled={busy}
-          onClick={() => changeCancellation(false)}>لغو رویداد و ثبت‌نام‌های فعال</Button>}
-    </Card>}
     <Card title="اطلاعات هشتی"><form onSubmit={save} className="form-stack">
       <section className={styles.formSection}>
-        {!eventId && <div className={styles.sectionIntro}><span>۰۱</span><div><h3>هویت هشتی</h3><p>نام و موضوعی که هشتی‌نشین‌ها می‌بینند.</p></div></div>}
+        <div className={styles.sectionIntro}><span>۰۱</span><div><h3>هویت هشتی</h3><p>نام و موضوعی که هشتی‌نشین‌ها می‌بینند.</p></div></div>
       <div className="field-row"><Field id="event-number" label="شماره هشتی" type="number" min={1}
         value={form.event_number} onChange={(e) => set("event_number", e.target.value)} required />
         <Field id="event-title" label="عنوان" value={form.title}
@@ -285,7 +279,7 @@ export function EventEditor({ eventId }: { eventId?: number }) {
         onChange={(e) => set("description", e.target.value)} /></div>
       </section>
       <section className={styles.formSection}>
-        {!eventId && <div className={styles.sectionIntro}><span>۰۲</span><div><h3>زمان و مکان</h3><p>برای هرکدام، وضعیت اعلام را جداگانه مشخص کنید.</p></div></div>}
+        <div className={styles.sectionIntro}><span>۰۲</span><div><h3>زمان و مکان</h3><p>برای هرکدام، وضعیت اعلام را جداگانه مشخص کنید.</p></div></div>
       <div className={styles.scheduleGrid}><div className={styles.scheduleBlock}>
       <div className="field"><label htmlFor="time-mode">نحوهٔ اعلام زمان</label>
         <select id="time-mode" value={form.time_mode}
@@ -318,7 +312,7 @@ export function EventEditor({ eventId }: { eventId?: number }) {
       </div></div>
       </section>
       <section className={styles.formSection}>
-        {!eventId && <div className={styles.sectionIntro}><span>۰۳</span><div><h3>میزبانی و ثبت‌نام</h3><p>ظرفیت، مبلغ ورودی و وضعیت ثبت‌نام را تنظیم کنید.</p></div></div>}
+        <div className={styles.sectionIntro}><span>۰۳</span><div><h3>میزبانی و ثبت‌نام</h3><p>ظرفیت، مبلغ ورودی و وضعیت ثبت‌نام را تنظیم کنید.</p></div></div>
       <div className="field-row"><Field id="hosts" label="میزبان یا میزبانان" value={form.hosts}
         onChange={(e) => set("hosts", e.target.value)} />
         <Field id="capacity" label="ظرفیت پیشنهادی (غیرالزام‌آور)" type="number" min={0}
@@ -333,7 +327,7 @@ export function EventEditor({ eventId }: { eventId?: number }) {
         id="public-note" rows={3} value={form.public_note}
         onChange={(e) => set("public_note", e.target.value)} /></div>
       </section>
-      {!eventId && <div className={styles.mediaGrid}>
+      <div className={styles.mediaGrid}>
         <section className={styles.supportSection}>
           <div className={styles.sectionIntro}><span>۰۴</span><div><h3>پوستر هشتی</h3>
             <p>تصویری برای معرفی هشتی انتخاب کنید.</p></div></div>
@@ -344,25 +338,33 @@ export function EventEditor({ eventId }: { eventId?: number }) {
             <p>افرادی که این هشتی را مدیریت می‌کنند.</p></div></div>
           {secretaryFields}
         </section>
-      </div>}
-      <div className={styles.saveBar}><p>پس از ساخت، می‌توانید ثبت‌نام‌ها و حضور هشتی‌نشین‌ها را مدیریت کنید.</p>
+      </div>
+      <div className={styles.saveBar}><p>{eventId ?
+        "تغییر پوستر، دبیران و مبلغ ورودی دکمهٔ ذخیرهٔ جداگانه دارند." :
+        "پس از ساخت، می‌توانید ثبت‌نام‌ها و حضور هشتی‌نشین‌ها را مدیریت کنید."}</p>
         <Button className="primary" type="submit" disabled={busy || event?.is_cancelled}>
           {busy ? "در حال ذخیره…" : eventId ? "ذخیره اطلاعات" : "ساخت هشتی"}</Button></div>
     </form></Card>
-    {eventId && <Card title="هزینهٔ ورودی"><p className="muted">تغییر مبلغ روی مهمان‌های حاضر و غایب با هزینه اعمال می‌شود؛ مازاد تسویه به کیف پول برمی‌گردد.</p>
+    {eventId && event && <div className={styles.managementGrid}>
+    <Card title="وضعیت هشتی"><p className="muted">
+      فعال‌سازی مجدد، وضعیت باز/بسته ثبت‌نام و سوابق مالی پیشین را تغییر نمی‌دهد.</p>
+      {event.is_cancelled ? <Button type="button" className="secondary" disabled={busy}
+        onClick={() => changeCancellation(true)}>فعال‌سازی مجدد هشتی</Button> :
+        <Button type="button" className="danger-button" disabled={busy}
+          onClick={() => changeCancellation(false)}>لغو هشتی و ثبت‌نام‌های فعال</Button>}
+    </Card>
+    <Card title="هزینهٔ ورودی"><p className="muted">تغییر مبلغ روی هشتی‌نشین‌های حاضر و غایب با هزینه اعمال می‌شود؛ مازاد تسویه به کیف پول برمی‌گردد.</p>
       <div className="field-row"><Field id="new-entry-fee" label="ورودی جدید (تومان)" type="number" min={0}
         value={feeInput} onChange={(e) => setFeeInput(e.target.value)} />
         <Button type="button" className="secondary" disabled={busy || event?.is_cancelled}
-          onClick={saveEntryFee}>ذخیره ورودی</Button></div></Card>}
-    {eventId && <Card title="پوستر رویداد">{posterFields}</Card>}
+          onClick={saveEntryFee}>ذخیره ورودی</Button></div></Card></div>}
     {eventId && <EventRegistrationManager eventId={eventId}
       available={event?.registration_status === "open" && !event?.is_cancelled}
       onAdded={() => setAttendanceRefresh((value) => value + 1)} />}
     {eventId && <EventAttendanceTable eventId={eventId} cancelled={event?.is_cancelled ?? false}
       registrationOpen={event?.registration_status === "open"}
       refresh={attendanceRefresh} />}
-    {eventId && <Card title="دبیران رویداد">{secretaryFields}</Card>}
-    {eventId && <Card title="حذف رویداد بدون سابقه"><p className="muted">رویداد دارای ثبت‌نام یا پرداخت حذف نمی‌شود.</p>
-      <Button type="button" className="danger-button" disabled={busy} onClick={remove}>حذف رویداد</Button></Card>}
+    {eventId && <Card title="حذف هشتی بدون سابقه"><p className="muted">هشتی دارای ثبت‌نام یا پرداخت حذف نمی‌شود.</p>
+      <Button type="button" className="danger-button" disabled={busy} onClick={remove}>حذف هشتی</Button></Card>}
   </div>;
 }
