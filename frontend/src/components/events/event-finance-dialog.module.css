@@ -1,0 +1,30 @@
+.dialog {
+  width:min(600px,calc(100vw - 2rem)); max-width:none; max-height:min(88dvh,780px);
+  padding:1.15rem; border:2px solid #0067a5; border-radius:1.1rem;
+  background:#fff; color:#17374c; box-shadow:6px 7px 0 #ff7700,0 24px 65px #10182740;
+  overflow-y:auto;
+}
+.dialog::backdrop { background:#102b3db8; backdrop-filter:blur(3px); }
+.header { display:flex; align-items:start; justify-content:space-between; gap:1rem; padding-bottom:.85rem; border-bottom:1px solid #dce9f0; }
+.kicker { color:#e66b00; font-size:.73rem; font-weight:800; }
+.header h3 { margin:.15rem 0 0; color:#0d344e; font-size:1.13rem; line-height:1.5; }
+.close { display:grid; place-items:center; flex:none; width:2.35rem; height:2.35rem; padding:0; border:1px solid #b5cbd8; border-radius:.58rem; background:#fff; color:#0067a5; }
+.close svg { display:block; width:1rem; height:1rem; }
+.summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.45rem; margin:1rem 0; }
+.summary > div { display:grid; align-content:center; gap:.18rem; min-width:0; padding:.65rem; border:1px solid #dceaf1; border-radius:.65rem; background:#f1f8fc; }
+.summary small { color:#5d7789; font-size:.68rem; }
+.summary strong { color:#005b93; font-size:.85rem; overflow-wrap:anywhere; }
+.tabs { display:grid; grid-template-columns:1fr 1fr; gap:.3rem; padding:.25rem; border-radius:.7rem; background:#eaf3f8; margin-bottom:1rem; }
+.tabs button { min-height:2.5rem; border:0; border-radius:.5rem; background:transparent; color:#47677d; font-size:.81rem; font-weight:800; }
+.tabs button[aria-selected="true"] { background:#fff; color:#0067a5; box-shadow:0 2px 8px #17374c19; }
+.empty { margin:.65rem 0; color:#587185; font-size:.84rem; }
+.dialog :global(.event-settlement) { padding:0; border:0; box-shadow:none; }
+.dialog :global(.event-settlement > strong) { display:none; }
+.dialog :global(.event-settlement > p) { margin:.2rem 0 .8rem; font-size:.79rem; }
+@media(max-width:640px) {
+  .dialog { width:100vw; max-height:90dvh; margin:auto 0 0; padding:1rem; border-radius:1.1rem 1.1rem 0 0; border-bottom:0; box-shadow:0 -12px 45px #10182740; }
+  .summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .summary > div:last-child { grid-column:1/-1; }
+  .dialog :global(.admin-settlement-form) { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .dialog :global(.admin-settlement-confirm) { grid-column:1/-1; width:100%; }
+}

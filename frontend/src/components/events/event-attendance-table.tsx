@@ -4,8 +4,7 @@ import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import { Button, Card } from "@/components/ui";
 import { EventOrders } from "@/components/events/event-orders";
-import { EventSettlement } from "@/components/events/event-settlement";
-import { SettlementOperations } from "@/components/guests/settlement-operations";
+import { EventFinanceDialog } from "@/components/events/event-finance-dialog";
 import { errorMessage } from "@/lib/api";
 import { formatToman, persianDigits } from "@/lib/format";
 import { registrationsApi, type Attendance, type EventRegistration } from "@/lib/registrations";
@@ -26,10 +25,10 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [ordersId, setOrdersId] = useState<number | null>(null);
-  const [settlementId, setSettlementId] = useState<number | null>(null);
-  const [cancellationId, setCancellationId] = useState<number | null>(null);
+  const [financeId, setFinanceId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const financeRow = rows.find((row) => row.id === financeId && row.status === "active");
 
   useEffect(() => {
     let active = true;
@@ -107,14 +106,10 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
           setOrdersId((value) => value === row.id ? null : row.id)}>
           {ordersId === row.id ? "بستن" : "مشاهده"}</Button></td>
         <td><div className={styles.actions}><Button type="button" className="secondary"
-          disabled={cancelled || row.status !== "active" || row.debt <= 0 || busyId !== null}
-          onClick={() => setSettlementId((value) => value === row.id ? null : row.id)}>
-          {settlementId === row.id ? "بستن تسویه" : "تسویه"}
-        </Button><Button type="button" className="secondary"
           disabled={cancelled || row.status !== "active" ||
-            row.active_settlements + row.active_discounts <= 0 || busyId !== null}
-          onClick={() => setCancellationId((value) => value === row.id ? null : row.id)}>
-          {cancellationId === row.id ? "بستن لغو" : "لغو تسویه"}
+            row.debt + row.active_settlements + row.active_discounts <= 0 || busyId !== null}
+          aria-haspopup="dialog" onClick={() => setFinanceId(row.id)}>
+          امور مالی
         </Button>{row.status === "active" ? <Button type="button" className="danger-button"
           disabled={cancelled || busyId !== null} onClick={() => changeRegistration(row)}>
           لغو ثبت‌نام</Button> : <Button type="button" className="secondary"
@@ -122,16 +117,6 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
           onClick={() => changeRegistration(row)}>فعال‌سازی مجدد</Button>}</div></td>
       </tr>{ordersId === row.id && <tr><td colSpan={12}>
         <EventOrders row={row} cancelled={cancelled} refresh={revision}
-          onChanged={() => setRevision((value) => value + 1)} />
-      </td></tr>}{settlementId === row.id && !cancelled && row.status === "active" &&
-      <tr><td colSpan={12}>
-        <EventSettlement row={row} onChanged={() => {
-          setSettlementId(null); setNotice("تسویهٔ رویداد ثبت شد.");
-          setRevision((value) => value + 1);
-        }} />
-      </td></tr>}{cancellationId === row.id && !cancelled && row.status === "active" &&
-      <tr><td colSpan={12}>
-        <SettlementOperations registrationId={row.id} revision={revision}
           onChanged={() => setRevision((value) => value + 1)} />
       </td></tr>}</Fragment>)}</tbody></table></div>
     {!loading && rows.length === 0 && <p className="muted">هنوز مهمانی ثبت‌نام نکرده است.</p>}
@@ -142,5 +127,7 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
         setLoading(true); setOffset(offset + 50); }}>بعدی</Button>}
       <Button type="button" className="secondary" onClick={() => {
         setLoading(true); setRevision((value) => value + 1); }}>تازه‌سازی</Button></div>
-  </Card></div>;
+  </Card>{financeRow && !cancelled && <EventFinanceDialog row={financeRow} revision={revision}
+    onChanged={() => setRevision((value) => value + 1)} onDismiss={() => setFinanceId(null)} />}
+  </div>;
 }
