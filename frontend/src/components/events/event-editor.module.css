@@ -26,6 +26,11 @@
 .scheduleGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; align-items:start; }
 .scheduleBlock { display:grid; align-content:start; gap:.8rem; min-width:0; min-height:100%; padding:1rem; border:1px solid #d5e6ee; border-radius:.9rem; background:#f5fafc; }
 .scheduleBlock :global(.field-row) { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+.exactTimeGroup { display:grid; gap:.35rem; min-width:0; }
+.exactTimeFields { align-items:start; }
+.exactTimeFields :global(.field) { align-content:start; }
+.exactTimeFields :global(.field input) { min-height:3rem; height:3rem; }
+.scheduleHint { color:#678094; font-size:.75rem; }
 .mediaGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; padding:1.2rem 0; border-top:1px solid #e3edf2; border-bottom:1px solid #e3edf2; }
 .supportSection { display:grid; align-content:start; gap:.8rem; min-width:0; padding:1rem; border:1px solid #d5e6ee; border-radius:.9rem; background:#f5fafc; }
 .supportSection :global(.muted) { margin:0; color:#678094; font-size:.76rem; }

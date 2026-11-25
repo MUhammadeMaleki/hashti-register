@@ -1,0 +1,81 @@
+.panel {
+  min-width: 0;
+}
+
+.panel :global(.card) {
+  min-width: 0;
+}
+
+.panel :global(.form-stack) {
+  max-width: 680px;
+}
+
+.inputWrap {
+  position: relative;
+}
+
+.guestPicker input {
+  padding-inline-start: 1rem;
+}
+
+.guestPicker input[aria-expanded="true"] {
+  border-color: #0067a5;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.results {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% - 1px);
+  right: 0;
+  left: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid #0067a5;
+  border-radius: 0 0 .7rem .7rem;
+  background: #fff;
+  box-shadow: 0 10px 20px #17374c18;
+}
+
+.results p {
+  margin: 0;
+  padding: .75rem 1rem;
+  color: #587185;
+  font-size: .8rem;
+}
+
+.result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  width: 100%;
+  padding: .65rem .9rem;
+  border: 0;
+  border-bottom: 1px solid #e2edf2;
+  background: #fff;
+  color: #17374c;
+  font: inherit;
+  font-size: .82rem;
+  text-align: right;
+  cursor: pointer;
+}
+
+.result:hover,
+.result:focus-visible {
+  background: #eaf5fb;
+}
+
+.result span {
+  color: #587185;
+  white-space: nowrap;
+}
+
+@media (max-width: 550px) {
+  .result {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: .1rem;
+  }
+}

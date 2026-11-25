@@ -286,11 +286,14 @@ export function EventEditor({ eventId }: { eventId?: number }) {
           onChange={(e) => setTimeMode(e.target.value as Form["time_mode"])}>
           <option value="tba">اعلام بعدی</option><option value="approximate">تقریبی</option>
           <option value="exact">دقیق</option></select></div>
-      {form.time_mode === "exact" && <div className="field-row"><Field id="event-date" label="تاریخ برگزاری (شمسی)"
-        inputMode="numeric" placeholder="۱۴۰۵/۰۹/۰۲" hint="سال/ماه/روز؛ تاریخ گذشته هم مجاز است"
+      {form.time_mode === "exact" && <div className={styles.exactTimeGroup}>
+        <div className={`field-row ${styles.exactTimeFields}`}><Field id="event-date" label="تاریخ برگزاری (شمسی)"
+        inputMode="numeric" placeholder="۱۴۰۵/۰۹/۰۲"
         value={form.event_date} onChange={(e) => set("event_date", e.target.value)} required />
         <Field id="event-time" label="ساعت شروع" type="time" value={form.start_time}
-          onChange={(e) => set("start_time", e.target.value)} required /></div>}
+          onChange={(e) => set("start_time", e.target.value)} required /></div>
+        <small className={styles.scheduleHint}>تاریخ را به شکل سال/ماه/روز بنویسید؛ تاریخ گذشته هم مجاز است.</small>
+      </div>}
       {form.time_mode === "approximate" && <Field id="time-text" label="شرح زمان تقریبی"
         value={form.time_text} onChange={(e) => set("time_text", e.target.value)}
         hint="تاریخ یا ساعت حدودی، یا «در حال هماهنگی» را آزادانه بنویسید." required />}
