@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { AppShell } from "@/components/app-shell";
 import { Button, Card, Field, MoneyField } from "@/components/ui";
-import { GuestFinance } from "@/components/guests/guest-finance";
+import { GuestFinance, GuestWalletAdjustment } from "@/components/guests/guest-finance";
 import { api, errorMessage } from "@/lib/api";
 import { formatJalali, formatToman, persianDigits } from "@/lib/format";
 import { guestsApi, type GuestInput, type GuestProfile, type InterestTag } from "@/lib/guests";
@@ -36,9 +36,13 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [tempPassword, setTempPassword] = useState("");
+  const canRemove = !!profile && !profile.has_account && !profile.registrations.length &&
+    !profile.payments.length && !profile.notes.length &&
+    !profile.wallet_transactions.length && !profile.wallet_balance;
 
   useEffect(() => {
     let active = true;
+    setTempPassword("");
     Promise.all([guestsApi.get(guestId), guestsApi.tags()]).then(([guest, tags]) => {
       if (!active) return;
       setProfile(guest); setForm(formFrom(guest)); setAllTags(tags);
@@ -128,13 +132,29 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
         <span className={styles.avatar} aria-hidden="true">
           {profile ? `${profile.first_name[0] ?? ""}${profile.last_name[0] ?? ""}` : "ه"}
         </span>
-        <div><span className={styles.eyebrow}>پروندهٔ هشتی‌نشین</span>
-          <h2>{profile ? `${profile.first_name} ${profile.last_name}` : "پروفایل هشتی‌نشین"}</h2>
+        <div className={styles.heroContent}><span className={styles.eyebrow}>پروندهٔ هشتی‌نشین</span>
+          <div className={styles.heroTitleRow}>
+            <h2>{profile ? `${profile.first_name} ${profile.last_name}` : "پروفایل هشتی‌نشین"}</h2>
+            {profile && <div className={styles.heroActions}>
+              {profile.has_account && <Button type="button" className="secondary" disabled={busy}
+                title="صدور رمز تازه، نشست‌ها و رمز قبلی را باطل می‌کند."
+                onClick={issueTempPassword}>صدور رمز موقت</Button>}
+              <Button type="button" className="danger-button" disabled={busy || !canRemove}
+                title="فقط پروفایل بدون حساب و بدون سابقه قابل حذف است."
+                onClick={remove}>حذف پروفایل بی‌سابقه</Button>
+            </div>}
+          </div>
           {profile && <div className={styles.heroMeta}>
             <span>شناسهٔ {profile.id.toLocaleString("fa-IR")}</span>
             <span dir="ltr">{persianDigits(profile.phone)}</span>
             <span className={profile.has_account ? styles.accountActive : styles.accountInactive}>
               {profile.has_account ? "حساب فعال" : "بدون حساب ورود"}</span>
+          </div>}
+          {tempPassword && <div role="status" className={styles.tempPassword}>
+            <span>رمز موقت: <code dir="ltr">{tempPassword}</code>
+              <small>فقط همین‌جا نمایش داده می‌شود؛ تا ۲۴ ساعت اعتبار دارد.</small></span>
+            <Button type="button" className="secondary" onClick={() => setTempPassword("")}>
+              پنهان کردن</Button>
           </div>}
         </div>
       </div>
@@ -152,12 +172,13 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
         <div><span>هشتی‌های ثبت‌نام‌شده</span><strong>{profile.registrations.length.toLocaleString("fa-IR")}</strong></div>
       </div>
       <nav className={styles.quickNav} aria-label="بخش‌های پرونده">
-        <a href="#guest-information">اطلاعات</a><a href="#guest-finance">مالی</a>
-        <a href="#guest-interests">علاقه‌مندی‌ها</a><a href="#guest-registrations">هشتی‌ها</a>
-        <a href="#guest-activity">سوابق و یادداشت‌ها</a>
+        <a href="#guest-information">اطلاعات و علاقه‌مندی‌ها</a>
+        <a href="#guest-registrations">هشتی‌ها و حضور</a>
+        <a href="#guest-wallet">کیف پول و پیگیری</a>
+        <a href="#guest-finance">گردش مالی و تسویه</a>
       </nav>
-      <div className={styles.contentGrid}>
-      <div id="guest-information" className={styles.sectionCard}><Card title="اطلاعات هشتی‌نشین"><form className="form-stack" onSubmit={save}>
+      <div id="guest-information" className={styles.sectionCard}><Card title="اطلاعات هشتی‌نشین">
+      <div className={styles.informationGrid}><form className="form-stack" onSubmit={save}>
         <div className="field-row"><Field id="first-name" label="نام" required value={form.first_name}
           onChange={(event) => set("first_name", event.target.value)} />
           <Field id="last-name" label="نام خانوادگی" required value={form.last_name}
@@ -178,8 +199,10 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
           <textarea id="internal-note" rows={3} value={form.internal_note ?? ""}
             onChange={(event) => set("internal_note", event.target.value || null)} /></div>
         <Button type="submit" className="primary" disabled={busy}>ذخیرهٔ اطلاعات</Button>
-      </form></Card></div>
-      <div id="guest-interests" className={styles.sectionCard}><Card title="علاقه‌مندی‌ها"><div className="checkbox-grid">{allTags.map((tag) =>
+      </form>
+      <aside id="guest-interests" className={styles.interestsPanel}>
+        <h3>علاقه‌مندی‌ها</h3>
+        <div className="checkbox-grid">{allTags.map((tag) =>
         <label className="checkbox-item" key={tag.id}><input type="checkbox"
           checked={selectedTags.includes(tag.id)} onChange={() => setSelectedTags((previous) =>
             previous.includes(tag.id) ? previous.filter((id) => id !== tag.id) : [...previous, tag.id])} />
@@ -190,18 +213,18 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
           <Field id="new-tag" label="برچسب تازه" value={newTag}
             onChange={(event) => setNewTag(event.target.value)} />
           <Button type="submit" className="secondary" disabled={busy}>ساخت برچسب</Button>
-        </form></Card></div>
-      </div>
-      <div id="guest-finance" className={`${styles.sectionCard} ${styles.financeSection}`}>
-        <GuestFinance profile={profile} onChanged={refreshFinance} />
-      </div>
+        </form>
+      </aside></div></Card></div>
       <div id="guest-registrations" className={styles.sectionCard}><Card title="هشتی‌ها و وضعیت حضور">
         <div className={styles.registrationList}>{profile.registrations.map((item) =>
           <details className={styles.registration} key={item.id}>
             <summary><span className={styles.registrationNumber}>هشتی {item.event.event_number.toLocaleString("fa-IR")}</span>
-              <strong>{item.event.title}</strong>
+              <span className={styles.registrationTitle}><strong>{item.event.title}</strong>
+                <small>حضور: {attendanceName(item.attendance)} · مانده: {formatToman(item.outstanding_total)}</small></span>
               <span className={item.status === "active" ? styles.activeBadge : styles.inactiveBadge}>
-                {item.status === "active" ? "ثبت‌نام فعال" : "لغوشده"}</span></summary>
+                {item.status === "active" ? "ثبت‌نام فعال" : "لغوشده"}</span>
+              <span className={styles.registrationChevron} aria-hidden="true">⌄</span></summary>
+            <div className={styles.registrationBody}>
             <div className={styles.registrationDetails}>
               <div><small>زمان</small><span>{item.event.event_date ?
                 formatJalali(`${item.event.event_date}T12:00:00Z`) : "تاریخ نامشخص"}</span></div>
@@ -223,10 +246,14 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
                 {discount.amount > 0 ? "تخفیف" : "اصلاح تخفیف"}: {formatToman(Math.abs(discount.amount))}
                 {" "}— {discount.reason} · {discount.actor_name} · {formatJalali(discount.created_at)}</p>)}
             </div>}
+            </div>
           </details>)}</div>
         {!profile.registrations.length && <p className="muted">هنوز ثبت‌نامی ندارد.</p>}
       </Card></div>
-      <div id="guest-activity" className={styles.activityGrid}>
+      <div id="guest-wallet" className={styles.activityGrid}>
+      <div className={styles.sectionCard}>
+        <GuestWalletAdjustment profile={profile} onChanged={refreshFinance} />
+      </div>
       <div className={styles.sectionCard}><Card title="یادداشت‌های پیگیری"><form className="form-stack" onSubmit={addNote}>
         <div className="field"><label htmlFor="note-type">نوع یادداشت</label>
           <select id="note-type" value={noteType} onChange={(event) =>
@@ -242,6 +269,8 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
           <small>{note.created_by} · {formatJalali(note.created_at)}</small>
           <p>{note.text}</p></div>)}</div>
         {!profile.notes.length && <p className="muted">هنوز یادداشتی ثبت نشده است.</p>}</Card></div>
+      </div>
+      <div id="guest-finance" className={styles.activityGrid}>
       <div className={styles.sectionCard}><Card title="گردش مالی">
         <h3>رسیدهای واریز <span>{profile.payments.length.toLocaleString("fa-IR")}</span></h3>
         <div className={styles.timeline}>{profile.payments.map((payment) =>
@@ -260,20 +289,10 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
           </div>)}</div>
         {!profile.payments.length && !profile.wallet_transactions.length &&
           <p className="muted">هنوز تراکنشی ندارد.</p>}</Card></div>
+      <div className={`${styles.sectionCard} ${styles.financeSection}`}>
+        <GuestFinance profile={profile} onChanged={refreshFinance} />
       </div>
-      {profile.has_account && <div className={styles.sectionCard}><Card title="رمز موقت حساب هشتی‌نشین">
-        <p className="muted">صدور رمز تازه، نشست‌ها و رمز قبلی را باطل می‌کند. رمز فقط همین‌جا نشان داده می‌شود و تا ۲۴ ساعت اعتبار دارد؛ آن را از مسیر امن تحویل دهید.</p>
-        <Button type="button" className="secondary" disabled={busy} onClick={issueTempPassword}>
-          صدور رمز موقت</Button>
-        {tempPassword && <div role="status" className="alert success">
-          <p>رمز موقت: <code dir="ltr">{tempPassword}</code></p>
-          <Button type="button" className="secondary" onClick={() => setTempPassword("")}>
-            پنهان کردن رمز</Button></div>}
-      </Card></div>}
-      <div className={`${styles.sectionCard} ${styles.dangerZone}`}><Card title="حذف پروفایل بی‌سابقه"><p className="muted">
-        هشتی‌نشینِ دارای حساب ورود، یادداشت یا هر سابقهٔ هشتی و مالی حذف نمی‌شود.</p>
-        <Button type="button" className="danger-button" disabled={busy} onClick={remove}>
-          حذف هشتی‌نشین</Button></Card></div>
+      </div>
     </>}
   </div></AppShell>;
 }

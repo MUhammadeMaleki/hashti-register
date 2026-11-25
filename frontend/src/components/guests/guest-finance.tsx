@@ -8,12 +8,53 @@ import { formatToman } from "@/lib/format";
 import { guestsApi, type GuestProfile } from "@/lib/guests";
 import styles from "./guest-profile.module.css";
 
-export function GuestFinance({ profile, onChanged }: {
+export function GuestWalletAdjustment({ profile, onChanged }: {
   profile: GuestProfile; onChanged: () => Promise<void>;
 }) {
   const [direction, setDirection] = useState<"increase" | "decrease">("increase");
   const [adjustAmount, setAdjustAmount] = useState("");
   const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  async function adjust(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const value = Number(adjustAmount);
+    if (!Number.isSafeInteger(value) || value <= 0 || !note.trim()) {
+      setError("مبلغ مثبت و توضیح الزامی است."); return;
+    }
+    setBusy(true); setError(""); setNotice("");
+    try {
+      await guestsApi.adjustWallet(profile.id,
+        direction === "increase" ? value : -value, note.trim());
+      await onChanged();
+      setAdjustAmount(""); setNote("");
+      setNotice("اصلاح کیف پول ثبت شد؛ بدهی هشتی‌ها خودکار تسویه نشد.");
+    } catch (caught) { setError(errorMessage(caught)); }
+    finally { setBusy(false); }
+  }
+
+  return <Card title="اصلاح دستی کیف پول">
+    {error && <p className="alert error" role="alert">{error}</p>}
+    {notice && <p className="alert success" role="status">{notice}</p>}
+    <form className="form-stack" onSubmit={adjust}>
+      <div className="field-row"><div className="field"><label htmlFor="adjust-direction">نوع</label>
+        <select id="adjust-direction" value={direction} onChange={(event) =>
+          setDirection(event.target.value as "increase" | "decrease")}>
+          <option value="increase">افزایش</option><option value="decrease">کاهش</option>
+        </select></div><MoneyField id="adjust-amount" label="مبلغ (تومان)"
+        value={adjustAmount} onValueChange={setAdjustAmount} required /></div>
+      <Field id="adjust-note" label="توضیح اجباری" value={note}
+        onChange={(event) => setNote(event.target.value)} required />
+      <Button type="submit" className="secondary" disabled={busy}>ثبت اصلاح</Button>
+    </form>
+  </Card>;
+}
+
+export function GuestFinance({ profile, onChanged }: {
+  profile: GuestProfile; onChanged: () => Promise<void>;
+}) {
   const [registrationId, setRegistrationId] = useState<number | null>(null);
   const [settleAmount, setSettleAmount] = useState("");
   const [discountAmount, setDiscountAmount] = useState("");
@@ -41,19 +82,6 @@ export function GuestFinance({ profile, onChanged }: {
     finally { setBusy(false); }
   }
 
-  async function adjust(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const value = Number(adjustAmount);
-    if (!Number.isSafeInteger(value) || value <= 0 || !note.trim()) {
-      setError("مبلغ مثبت و توضیح الزامی است."); return;
-    }
-    if (await run(() => guestsApi.adjustWallet(profile.id,
-      direction === "increase" ? value : -value, note.trim()),
-    "اصلاح کیف پول ثبت شد؛ بدهی هشتی‌ها خودکار تسویه نشد.")) {
-      setAdjustAmount(""); setNote("");
-    }
-  }
-
   async function settle(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!chosen) return;
     const value = Number(settleAmount);
@@ -71,7 +99,7 @@ export function GuestFinance({ profile, onChanged }: {
     }
   }
 
-  return <Card title="عملیات مالی">
+  return <Card title="تسویهٔ هشتی">
     <div className={styles.financeOverview}><p>بدهی هشتی‌ها: {formatToman(profile.finance_overview.total_debt)} · بدهی خالص پس از اعتبار:
       {" "}{formatToman(profile.finance_overview.net_debt)}</p>
     <p>سقف بدهی: {profile.finance_overview.debt_ceiling === null ? "تعیین‌نشده" :
@@ -80,21 +108,7 @@ export function GuestFinance({ profile, onChanged }: {
       هشدار: بدهی خالص از سقف تعیین‌شده بیشتر است؛ ثبت هزینه مسدود نمی‌شود.</p>}
     {error && <p className="alert error" role="alert">{error}</p>}
     {notice && <p className="alert success" role="status">{notice}</p>}
-    <div className={styles.financeGrid}><section className={styles.financeAction}>
-    <h3>اصلاح دستی کیف پول</h3>
-    <form className="form-stack" onSubmit={adjust}>
-      <div className="field-row"><div className="field"><label htmlFor="adjust-direction">نوع</label>
-        <select id="adjust-direction" value={direction} onChange={(event) =>
-          setDirection(event.target.value as "increase" | "decrease")}>
-          <option value="increase">افزایش</option><option value="decrease">کاهش</option>
-        </select></div><MoneyField id="adjust-amount" label="مبلغ (تومان)"
-        value={adjustAmount} onValueChange={setAdjustAmount} required /></div>
-      <Field id="adjust-note" label="توضیح اجباری" value={note}
-        onChange={(event) => setNote(event.target.value)} required />
-      <Button type="submit" className="secondary" disabled={busy}>ثبت اصلاح</Button>
-    </form>
-    </section><section className={styles.financeAction}>
-    <h3>تسویهٔ هشتی</h3>
+    <div className={styles.financeAction}>
     <div className="field"><label htmlFor="finance-registration">ثبت‌نام</label>
       <select id="finance-registration" value={registrationId ?? ""} onChange={(event) => {
         setRegistrationId(event.target.value ? Number(event.target.value) : null);
@@ -119,6 +133,6 @@ export function GuestFinance({ profile, onChanged }: {
           {busy ? "…" : "✓"}</Button></form>
       <SettlementOperations registrationId={chosen.id} revision={revision}
         onChanged={onChanged} /></>}
-    </section></div>
+    </div>
   </Card>;
 }
