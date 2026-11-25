@@ -40,6 +40,9 @@ export type GuestInput = {
   internal_note: string | null; debt_ceiling: number | null;
 };
 export type GuestPage = { items: GuestSummary[]; total: number; limit: number; offset: number };
+export type SettlementOperation = { id: number; registration_id: number;
+  amount: number; discount_amount: number; active_amount: number;
+  active_discount_amount: number; created_at: string };
 export type GuestListFilters = { interestTagId?: number; ageMin?: number; ageMax?: number;
   gender?: string };
 
@@ -87,6 +90,15 @@ export const guestsApi = {
   settlements: (registrationId: number) => api<{
     id: number; amount: number; active_amount: number; created_at: string
   }[]>(`/admin/finance/registrations/${registrationId}/settlements`),
+  settlementOperations: (registrationId: number) => api<SettlementOperation[]>(
+    `/admin/finance/registrations/${registrationId}/settlement-operations`),
+  cancelSettlement: (operationId: number, reason: string) => api<{
+    debt: number; wallet_balance: number; refunded_amount: number;
+    cancelled_discount_amount: number }>(
+    `/admin/finance/settlement-operations/${operationId}/cancel`, {
+      method: "POST", headers: { "Idempotency-Key": crypto.randomUUID() },
+      body: JSON.stringify({ reason }),
+    }),
   refund: (settlementId: number, amount: number, reason: string) =>
     api<{ debt: number; wallet_balance: number }>(
       `/admin/finance/settlements/${settlementId}/refunds`, {

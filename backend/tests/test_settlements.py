@@ -333,3 +333,139 @@ def test_discount_and_payment_are_distinct_and_reconcile_after_fee_change(
             assert (state.active_charges, state.active_discounts,
                     state.active_settlements, state.debt) == (0, 0, 0, 0)
             assert session.get(Wallet, wallet_id).balance == 150
+
+
+def test_cancel_one_combined_settlement_preserves_other_operations(
+    management_environment,  # noqa: F811
+):
+    engine, settings = management_environment
+    setup_admin(engine)
+    event_id, registration_id, wallet_id = seed(engine, fee=250, number=71)
+    factory = build_session_factory(engine)
+    path = f"/api/admin/finance/registrations/{registration_id}/settlements"
+    operations_path = f"/api/admin/finance/registrations/{registration_id}/settlement-operations"
+    with TestClient(create_app(settings), base_url=ORIGIN) as client:
+        login(client, "boss", "boss-password-123")
+        make_present(client, registration_id)
+        guest_id = client.get(f"/api/admin/events/{event_id}/registrations").json()[
+            "items"][0]["guest_id"]
+        assert mutation(client, "POST", f"/api/admin/finance/guests/{guest_id}/adjustments",
+                        "credit-cancel", {"amount": 250, "note": "واریز"}).status_code == 200
+        combined = mutation(client, "POST", path, "combined-cancel", {
+            "amount": 200, "discount_amount": 30, "discount_reason": "تخفیف آزمایشی",
+        })
+        assert combined.status_code == 200, combined.text
+        other = mutation(client, "POST", path, "other-settlement", {"amount": 20})
+        assert other.status_code == 200, other.text
+        operations = client.get(operations_path).json()
+        assert len(operations) == 2
+        selected = next(item for item in operations if item["discount_amount"] == 30)
+        assert (selected["active_amount"], selected["active_discount_amount"]) == (200, 30)
+        endpoint = f"/api/admin/finance/settlement-operations/{selected['id']}/cancel"
+        assert mutation(client, "POST", endpoint, "blank-cancel", {
+            "reason": "  ",
+        }).status_code == 422
+        cancelled = mutation(client, "POST", endpoint, "cancel-combined", {
+            "reason": "مبلغ اشتباه",
+        })
+        assert cancelled.status_code == 200, cancelled.text
+        assert (cancelled.json()["refunded_amount"],
+                cancelled.json()["cancelled_discount_amount"],
+                cancelled.json()["debt"], cancelled.json()["wallet_balance"]) == (
+                    200, 30, 230, 230)
+        assert mutation(client, "POST", endpoint, "cancel-combined", {
+            "reason": "مبلغ اشتباه",
+        }).json() == cancelled.json()
+        assert mutation(client, "POST", endpoint, "cancel-again", {
+            "reason": "تکرار",
+        }).status_code == 409
+        operations = client.get(operations_path).json()
+        assert [(item["active_amount"], item["active_discount_amount"])
+                for item in operations] == [(20, 0), (0, 0)]
+        with factory() as session:
+            state = registration_finance(session, registration_id)
+            assert (state.active_charges, state.active_settlements,
+                    state.active_discounts, state.debt) == (250, 20, 0, 230)
+            assert session.get(Wallet, wallet_id).balance == 230
+
+
+def test_cancel_discount_only_and_partially_reconciled_settlement(
+    management_environment,  # noqa: F811
+):
+    engine, settings = management_environment
+    setup_admin(engine)
+    event_id, registration_id, wallet_id = seed(engine, fee=200, number=72)
+    factory = build_session_factory(engine)
+    path = f"/api/admin/finance/registrations/{registration_id}/settlements"
+    operations_path = f"/api/admin/finance/registrations/{registration_id}/settlement-operations"
+    with TestClient(create_app(settings), base_url=ORIGIN) as client:
+        login(client, "boss", "boss-password-123")
+        make_present(client, registration_id)
+        guest_id = client.get(f"/api/admin/events/{event_id}/registrations").json()[
+            "items"][0]["guest_id"]
+        assert mutation(client, "POST", f"/api/admin/finance/guests/{guest_id}/adjustments",
+                        "credit-discount", {"amount": 150, "note": "واریز"}).status_code == 200
+        assert mutation(client, "POST", path, "discount-only", {
+            "amount": 0, "discount_amount": 50, "discount_reason": "تخفیف",
+        }).status_code == 200
+        assert mutation(client, "POST", path, "combined-partial", {
+            "amount": 100, "discount_amount": 50, "discount_reason": "تخفیف دوم",
+        }).status_code == 200
+        lowered = mutation(client, "PATCH", f"/api/admin/events/{event_id}/entry-fee",
+                           "lower-after-settlement", {"amount": 80})
+        assert lowered.status_code == 200, lowered.text
+        operations = client.get(operations_path).json()
+        assert len(operations) == 2
+        assert sum(item["active_discount_amount"] for item in operations) == 80
+        assert sum(item["active_amount"] for item in operations) == 0
+        discount_only = next(item for item in operations if item["amount"] == 0)
+        assert discount_only["active_discount_amount"] == 50
+        endpoint = f"/api/admin/finance/settlement-operations/{discount_only['id']}/cancel"
+        cancelled = mutation(client, "POST", endpoint, "cancel-only-discount", {
+            "reason": "تخفیف اشتباه",
+        })
+        assert cancelled.status_code == 200, cancelled.text
+        assert cancelled.json()["refunded_amount"] == 0
+        assert cancelled.json()["cancelled_discount_amount"] == 50
+        assert cancelled.json()["debt"] == 50
+        assert client.get(operations_path).json()[1]["active_discount_amount"] == 0
+        with factory() as session:
+            assert session.get(Wallet, wallet_id).balance == 150
+            assert registration_finance(session, registration_id).debt == 50
+
+
+def test_cancel_after_automatic_partial_refund_returns_only_active_remainder(
+    management_environment,  # noqa: F811
+):
+    engine, settings = management_environment
+    setup_admin(engine)
+    event_id, registration_id, wallet_id = seed(engine, fee=200, number=73)
+    factory = build_session_factory(engine)
+    with TestClient(create_app(settings), base_url=ORIGIN) as client:
+        login(client, "boss", "boss-password-123")
+        make_present(client, registration_id)
+        guest_id = client.get(f"/api/admin/events/{event_id}/registrations").json()[
+            "items"][0]["guest_id"]
+        assert mutation(client, "POST", f"/api/admin/finance/guests/{guest_id}/adjustments",
+                        "partial-credit", {"amount": 150, "note": "واریز"}).status_code == 200
+        assert mutation(client, "POST",
+                        f"/api/admin/finance/registrations/{registration_id}/settlements",
+                        "partial-combined", {"amount": 150, "discount_amount": 50,
+                                             "discount_reason": "تخفیف"}).status_code == 200
+        assert mutation(client, "PATCH", f"/api/admin/events/{event_id}/entry-fee",
+                        "partial-lower", {"amount": 180}).status_code == 200
+        operations = client.get(
+            f"/api/admin/finance/registrations/{registration_id}/settlement-operations"
+        ).json()
+        assert len(operations) == 1
+        assert (operations[0]["active_amount"],
+                operations[0]["active_discount_amount"]) == (130, 50)
+        result = mutation(client, "POST",
+                          f"/api/admin/finance/settlement-operations/{operations[0]['id']}/cancel",
+                          "cancel-partial", {"reason": "اشتباه در تسویه"})
+        assert result.status_code == 200, result.text
+        assert (result.json()["refunded_amount"],
+                result.json()["cancelled_discount_amount"],
+                result.json()["wallet_balance"], result.json()["debt"]) == (130, 50, 150, 180)
+        with factory() as session:
+            assert session.get(Wallet, wallet_id).balance == 150

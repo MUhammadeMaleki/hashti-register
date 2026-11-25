@@ -19,8 +19,10 @@ from app.services.finance import FinanceError, active_settlement, registration_f
 from app.services.settlements import (
     adjust_wallet,
     authorize_registration,
+    cancel_settlement_operation,
     refund_settlement,
     settle_registration,
+    settlement_operations,
 )
 
 router = APIRouter(prefix="/api/admin/finance", tags=["finance"])
@@ -50,6 +52,19 @@ class AdminSettlementBody(BaseModel):
 
 class RefundBody(AmountBody):
     reason: str = Field(min_length=1)
+
+    @field_validator("reason")
+    @classmethod
+    def nonblank(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("must not be blank")
+        return value
+
+
+class CancelSettlementBody(BaseModel):
+    model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
+    reason: str = Field(min_length=1, max_length=500)
 
     @field_validator("reason")
     @classmethod
@@ -116,6 +131,27 @@ def list_settlements(
     return [{"id": row.id, "amount": -row.amount,
              "active_amount": active_settlement(session, row.id),
              "created_at": row.created_at} for row in rows]
+
+
+@router.get("/registrations/{registration_id}/settlement-operations")
+def list_settlement_operations(
+    registration_id: int, actor: Actor = Depends(require_active_admin),
+    session: Session = Depends(get_db),
+) -> list[dict]:
+    _authorize(session, registration_id, actor)
+    return settlement_operations(session, registration_id)
+
+
+@router.post("/settlement-operations/{operation_id}/cancel",
+             dependencies=[Depends(require_browser_origin), Depends(require_csrf)])
+def admin_cancel_settlement_operation(
+    operation_id: int, body: CancelSettlementBody,
+    idempotency_key: str = Header(alias="Idempotency-Key"),
+    actor: Actor = Depends(require_active_admin), session: Session = Depends(get_db),
+) -> dict:
+    return _result(session, lambda: cancel_settlement_operation(
+        session, operation_id=operation_id, reason=body.reason,
+        actor=actor, key=idempotency_key))
 
 
 @router.post("/settlements/{settlement_id}/refunds",

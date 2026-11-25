@@ -2,7 +2,7 @@
 
 import hashlib
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models import (
@@ -45,6 +45,44 @@ def authorize_registration(session: Session, registration_id: int, actor: Actor)
     )) is None:
         raise FinanceError("forbidden", 403)
     return registration.event_id
+
+
+def settlement_operations(session: Session, registration_id: int) -> list[dict]:
+    """Project each recorded settlement attempt, including discount-only operations."""
+    logs = session.scalars(select(AuditLog).where(
+        AuditLog.entity_type == "registration", AuditLog.entity_id == registration_id,
+        AuditLog.action == "registration.settled",
+    ).order_by(AuditLog.id.desc())).all()
+    result = []
+    for log in logs:
+        metadata = log.metadata_json or {}
+        transaction_id = metadata.get("transaction_id")
+        discount_id = metadata.get("discount_id")
+        transaction = session.get(WalletTransaction, transaction_id) if transaction_id else None
+        discount = session.get(EventDiscount, discount_id) if discount_id else None
+        if not transaction and not discount:
+            continue
+        if (transaction and (transaction.type != "settlement" or
+                             transaction.registration_id != registration_id)) or (
+                discount and (discount.registration_id != registration_id or
+                              discount.amount <= 0)):
+            raise FinanceError("finance_invariant_broken")
+        active_payment = active_settlement(session, transaction.id) if transaction else 0
+        active_discount = 0
+        if discount:
+            reversed_amount = session.scalar(select(func.coalesce(
+                func.sum(EventDiscount.amount), 0)).where(
+                    EventDiscount.original_discount_id == discount.id)) or 0
+            active_discount = discount.amount + int(reversed_amount)
+            if active_discount < 0:
+                raise FinanceError("finance_invariant_broken")
+        result.append({"id": log.id, "registration_id": registration_id,
+                       "amount": -transaction.amount if transaction else 0,
+                       "discount_amount": discount.amount if discount else 0,
+                       "active_amount": active_payment,
+                       "active_discount_amount": active_discount,
+                       "created_at": log.created_at})
+    return result
 
 
 def settle_registration(
@@ -112,6 +150,93 @@ def settle_registration(
     return run_idempotent(session, actor_type=actor.type, actor_id=actor.id,
                           operation="registration.settle", key=key,
                           payload=payload, effect=effect)
+
+
+def cancel_settlement_operation(
+    session: Session, *, operation_id: int, reason: str, actor: Actor, key: str,
+) -> EffectResult:
+    reason = reason.strip()
+    if not reason:
+        raise FinanceError("invalid_cancellation_reason", 422)
+
+    def effect(current: Session) -> EffectResult:
+        log = current.scalar(select(AuditLog).where(
+            AuditLog.id == operation_id, AuditLog.entity_type == "registration",
+            AuditLog.action == "registration.settled",
+        ))
+        if log is None:
+            raise FinanceError("settlement_operation_not_found", 404)
+        event, registration, wallet = lock_registration_wallet(current, log.entity_id)
+        authorize_registration(current, registration.id, actor)
+        if event.is_cancelled or registration.status != "active":
+            raise FinanceError("settlement_cancellation_not_allowed")
+        metadata = log.metadata_json or {}
+        transaction_id = metadata.get("transaction_id")
+        discount_id = metadata.get("discount_id")
+        transaction = current.scalar(select(WalletTransaction).where(
+            WalletTransaction.id == transaction_id).with_for_update()) if transaction_id else None
+        discount = current.scalar(select(EventDiscount).where(
+            EventDiscount.id == discount_id).with_for_update()) if discount_id else None
+        if ((not transaction and not discount) or
+                (transaction_id and (transaction is None or transaction.type != "settlement" or
+                                     transaction.registration_id != registration.id or
+                                     transaction.wallet_id != wallet.id)) or
+                (discount_id and (discount is None or discount.amount <= 0 or
+                                  discount.registration_id != registration.id))):
+            raise FinanceError("invalid_settlement_operation")
+        payment = active_settlement(current, transaction.id) if transaction else 0
+        discount_amount = 0
+        if discount:
+            reversed_amount = current.scalar(select(func.coalesce(
+                func.sum(EventDiscount.amount), 0)).where(
+                    EventDiscount.original_discount_id == discount.id)) or 0
+            discount_amount = discount.amount + int(reversed_amount)
+            if discount_amount < 0:
+                raise FinanceError("finance_invariant_broken")
+        if not payment and not discount_amount:
+            raise FinanceError("settlement_already_cancelled")
+        before = registration_finance(current, registration.id)
+        reversal = None
+        if discount_amount:
+            reversal = EventDiscount(
+                registration_id=registration.id, original_discount_id=discount.id,
+                amount=-discount_amount, reason=reason, actor_id=actor.id,
+                idempotency_key=_ledger_key("discount-cancel", actor, key),
+            )
+            current.add(reversal)
+            current.flush()
+        refund = None
+        if payment:
+            refund = append_transaction(
+                current, wallet=wallet, type="refund", amount=payment,
+                registration_id=registration.id, original_transaction_id=transaction.id,
+                actor_type="user", actor_id=actor.id,
+                key=_ledger_key("settlement-cancel", actor, key), reason=reason,
+            )
+        after = registration_finance(current, registration.id)
+        current.add(AuditLog(
+            actor_type="user", actor_id=actor.id, action="registration.settlement_cancelled",
+            entity_type="registration", entity_id=registration.id,
+            before_json={"debt": before.debt, "wallet_balance": wallet.balance - payment},
+            after_json={"debt": after.debt, "wallet_balance": wallet.balance},
+            metadata_json={"idempotency_key": key, "operation_id": operation_id,
+                           "settlement_id": transaction_id, "discount_id": discount_id,
+                           "refund_id": refund.id if refund else None,
+                           "discount_reversal_id": reversal.id if reversal else None,
+                           "amount": payment, "discount_amount": discount_amount,
+                           "reason": reason},
+        ))
+        return EffectResult(200, {"operation_id": operation_id,
+                                  "registration_id": registration.id,
+                                  "refunded_amount": payment,
+                                  "cancelled_discount_amount": discount_amount,
+                                  "debt": after.debt, "wallet_balance": wallet.balance},
+                            "registration", registration.id)
+
+    return run_idempotent(session, actor_type="user", actor_id=actor.id,
+                          operation="registration.settlement_cancel", key=key,
+                          payload={"operation_id": operation_id, "reason": reason},
+                          effect=effect)
 
 
 def refund_settlement(

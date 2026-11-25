@@ -5,6 +5,7 @@ import { Fragment, useEffect, useState } from "react";
 import { Button, Card } from "@/components/ui";
 import { EventOrders } from "@/components/events/event-orders";
 import { EventSettlement } from "@/components/events/event-settlement";
+import { SettlementOperations } from "@/components/guests/settlement-operations";
 import { errorMessage } from "@/lib/api";
 import { formatToman, persianDigits } from "@/lib/format";
 import { registrationsApi, type Attendance, type EventRegistration } from "@/lib/registrations";
@@ -26,6 +27,7 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
   const [busyId, setBusyId] = useState<number | null>(null);
   const [ordersId, setOrdersId] = useState<number | null>(null);
   const [settlementId, setSettlementId] = useState<number | null>(null);
+  const [cancellationId, setCancellationId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -108,6 +110,11 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
           disabled={cancelled || row.status !== "active" || row.debt <= 0 || busyId !== null}
           onClick={() => setSettlementId((value) => value === row.id ? null : row.id)}>
           {settlementId === row.id ? "بستن تسویه" : "تسویه"}
+        </Button><Button type="button" className="secondary"
+          disabled={cancelled || row.status !== "active" ||
+            row.active_settlements + row.active_discounts <= 0 || busyId !== null}
+          onClick={() => setCancellationId((value) => value === row.id ? null : row.id)}>
+          {cancellationId === row.id ? "بستن لغو" : "لغو تسویه"}
         </Button>{row.status === "active" ? <Button type="button" className="danger-button"
           disabled={cancelled || busyId !== null} onClick={() => changeRegistration(row)}>
           لغو ثبت‌نام</Button> : <Button type="button" className="secondary"
@@ -122,6 +129,10 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
           setSettlementId(null); setNotice("تسویهٔ رویداد ثبت شد.");
           setRevision((value) => value + 1);
         }} />
+      </td></tr>}{cancellationId === row.id && !cancelled && row.status === "active" &&
+      <tr><td colSpan={12}>
+        <SettlementOperations registrationId={row.id} revision={revision}
+          onChanged={() => setRevision((value) => value + 1)} />
       </td></tr>}</Fragment>)}</tbody></table></div>
     {!loading && rows.length === 0 && <p className="muted">هنوز مهمانی ثبت‌نام نکرده است.</p>}
     <div className="pagination"><span>{total.toLocaleString("fa-IR")} ثبت‌نام</span>

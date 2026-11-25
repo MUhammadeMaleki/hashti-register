@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Button, Card, Field, MoneyField } from "@/components/ui";
+import { SettlementOperations } from "@/components/guests/settlement-operations";
 import { errorMessage } from "@/lib/api";
 import { formatToman } from "@/lib/format";
 import { guestsApi, type GuestProfile } from "@/lib/guests";
 import styles from "./guest-profile.module.css";
-
-type Settlement = { id: number; amount: number; active_amount: number; created_at: string };
 
 export function GuestFinance({ profile, onChanged }: {
   profile: GuestProfile; onChanged: () => Promise<void>;
@@ -19,10 +18,6 @@ export function GuestFinance({ profile, onChanged }: {
   const [settleAmount, setSettleAmount] = useState("");
   const [discountAmount, setDiscountAmount] = useState("");
   const [discountReason, setDiscountReason] = useState("");
-  const [settlements, setSettlements] = useState<Settlement[]>([]);
-  const [refundId, setRefundId] = useState<number | null>(null);
-  const [refundAmount, setRefundAmount] = useState("");
-  const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -37,15 +32,6 @@ export function GuestFinance({ profile, onChanged }: {
     walletValue <= (profile.wallet_balance ?? 0) &&
     walletValue + discountValue <= chosen.outstanding_total &&
     (discountValue === 0 || !!discountReason.trim());
-
-  useEffect(() => {
-    if (registrationId === null) return;
-    let mounted = true;
-    guestsApi.settlements(registrationId).then((rows) => {
-      if (mounted) setSettlements(rows);
-    }).catch((caught) => { if (mounted) setError(errorMessage(caught)); });
-    return () => { mounted = false; };
-  }, [registrationId, revision]);
 
   async function run(action: () => Promise<unknown>, success: string): Promise<boolean> {
     setBusy(true); setError(""); setNotice("");
@@ -85,20 +71,6 @@ export function GuestFinance({ profile, onChanged }: {
     }
   }
 
-  async function refund(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const selected = settlements.find((item) => item.id === refundId);
-    const value = Number(refundAmount);
-    if (!selected || !Number.isSafeInteger(value) || value <= 0 ||
-        value > selected.active_amount || !reason.trim()) {
-      setError("مبلغ برگشت باید در سقف تسویهٔ فعال و همراه دلیل باشد."); return;
-    }
-    if (await run(() => guestsApi.refund(selected.id, value, reason.trim()),
-      "برگشت به تسویهٔ اصلی متصل و ثبت شد.")) {
-      setRefundAmount(""); setReason("");
-    }
-  }
-
   return <Card title="عملیات مالی">
     <div className={styles.financeOverview}><p>بدهی هشتی‌ها: {formatToman(profile.finance_overview.total_debt)} · بدهی خالص پس از اعتبار:
       {" "}{formatToman(profile.finance_overview.net_debt)}</p>
@@ -126,7 +98,6 @@ export function GuestFinance({ profile, onChanged }: {
     <div className="field"><label htmlFor="finance-registration">ثبت‌نام</label>
       <select id="finance-registration" value={registrationId ?? ""} onChange={(event) => {
         setRegistrationId(event.target.value ? Number(event.target.value) : null);
-        setRefundId(null); setSettlements([]);
       }}><option value="">انتخاب هشتی</option>{active.map((row) =>
         <option key={row.id} value={row.id}>هشتی {row.event.event_number.toLocaleString("fa-IR")} · {row.event.title}</option>)}</select>
     </div>
@@ -146,19 +117,8 @@ export function GuestFinance({ profile, onChanged }: {
           disabled={busy || !canSettle}
           title="ثبت تسویه و تخفیف" aria-label="ثبت تسویه و تخفیف">
           {busy ? "…" : "✓"}</Button></form>
-      <h3>برگشت تسویه</h3><div className="field"><label htmlFor="refund-settlement">تسویهٔ اصلی</label>
-        <select id="refund-settlement" value={refundId ?? ""} onChange={(event) =>
-          setRefundId(event.target.value ? Number(event.target.value) : null)}>
-          <option value="">انتخاب تسویه</option>{settlements.filter((item) => item.active_amount > 0)
-            .map((item) => <option value={item.id} key={item.id}>#{item.id.toLocaleString("fa-IR")} · فعال:
-              {" "}{formatToman(item.active_amount)}</option>)}</select></div>
-      {refundId !== null && <form className="form-stack" onSubmit={refund}>
-        <MoneyField id="refund-amount" label="مبلغ برگشت (تومان)"
-          value={refundAmount} onValueChange={setRefundAmount} required />
-        <Field id="refund-reason" label="دلیل برگشت" value={reason}
-          onChange={(event) => setReason(event.target.value)} required />
-        <Button type="submit" className="secondary" disabled={busy}>ثبت برگشت</Button>
-      </form>}</>}
+      <SettlementOperations registrationId={chosen.id} revision={revision}
+        onChanged={onChanged} /></>}
     </section></div>
   </Card>;
 }
