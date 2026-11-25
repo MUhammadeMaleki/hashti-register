@@ -7,7 +7,7 @@ export function FeaturedEventCard({ event, index }: { event: PublicEvent; index:
       {event.poster_url
         ? <img src={event.poster_url} alt={`پوستر ${event.title}`} loading="lazy" />
         : <span className="featured-event-image-fallback" aria-hidden="true">هشتی<span>.</span></span>}
-      <span className="featured-event-number">هشتی شمارهٔ {event.event_number}</span>
+      <span className="featured-event-number">هشتی شمارهٔ {new Intl.NumberFormat("fa-IR").format(event.event_number)}</span>
       <span className={`featured-event-status ${event.registration_status === "open" ? "is-open" : ""}`}>
         {event.registration_status === "open" ? "ثبت‌نام باز" : "ثبت‌نام بسته"}
       </span>

@@ -8,7 +8,7 @@ export function PublicEventCard({ event }: { event: PublicEvent }) {
         : <span className="public-event-placeholder">هشتی<span>.</span></span>}
     </Link>
     <div className="public-event-body">
-      <span className="eyebrow">هشتی شمارهٔ {event.event_number}</span>
+      <span className="eyebrow">هشتی شمارهٔ {new Intl.NumberFormat("fa-IR").format(event.event_number)}</span>
       <h3><Link href={`/events/${event.id}`}>{event.title}</Link></h3>
       <p>{eventTime(event)}</p>
       <p>{eventPlace(event)}</p>
