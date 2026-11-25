@@ -283,8 +283,9 @@ export function EventEditor({ eventId }: { eventId?: number }) {
     <Card title="اطلاعات هشتی"><form onSubmit={save} className="form-stack">
       <section className={styles.formSection}>
         <div className={styles.sectionIntro}><span>۰۱</span><div><h3>هویت هشتی</h3><p>نام و موضوعی که هشتی‌نشین‌ها می‌بینند.</p></div></div>
-      <div className="field-row"><Field id="event-number" label="شماره هشتی" type="number" min={1}
-        value={form.event_number} onChange={(e) => set("event_number", e.target.value)} required />
+      <div className="field-row"><Field id="event-number" label="شماره هشتی" inputMode="numeric"
+        pattern="[۰-۹]*" value={persianDigits(form.event_number)}
+        onChange={(e) => set("event_number", latinDigits(e.target.value).replace(/[^0-9]/g, ""))} required />
         <Field id="event-title" label="عنوان" value={form.title}
           onChange={(e) => set("title", e.target.value)} required maxLength={255} /></div>
       <div className="field"><label htmlFor="event-description">توضیحات</label><textarea
