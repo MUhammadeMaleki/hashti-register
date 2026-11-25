@@ -7,8 +7,9 @@ import { AppShell } from "@/components/app-shell";
 import { Button, Card, Field } from "@/components/ui";
 import { GuestFinance } from "@/components/guests/guest-finance";
 import { api, errorMessage } from "@/lib/api";
-import { formatJalali, formatToman } from "@/lib/format";
+import { formatJalali, formatToman, persianDigits } from "@/lib/format";
 import { guestsApi, type GuestInput, type GuestProfile, type InterestTag } from "@/lib/guests";
+import styles from "./guest-profile.module.css";
 
 function formFrom(profile: GuestProfile): GuestInput {
   return { first_name: profile.first_name, last_name: profile.last_name, phone: profile.phone,
@@ -121,29 +122,42 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
     finally { setBusy(false); }
   }
 
-  return <AppShell kind="user"><div className="editor-stack">
-    <div className="section-heading"><div><h2>پروفایل هشتی‌نشین</h2>
-      {profile && <p className="muted">شناسهٔ {profile.id.toLocaleString("fa-IR")} · {profile.first_name} {profile.last_name}</p>}</div>
-      <Link className="button secondary" href="/panel/guests">بانک هشتی‌نشین‌ها</Link></div>
+  return <AppShell kind="user"><div className={styles.page}>
+    <header className={styles.hero}>
+      <div className={styles.heroIdentity}>
+        <span className={styles.avatar} aria-hidden="true">
+          {profile ? `${profile.first_name[0] ?? ""}${profile.last_name[0] ?? ""}` : "ه"}
+        </span>
+        <div><span className={styles.eyebrow}>پروندهٔ هشتی‌نشین</span>
+          <h2>{profile ? `${profile.first_name} ${profile.last_name}` : "پروفایل هشتی‌نشین"}</h2>
+          {profile && <div className={styles.heroMeta}>
+            <span>شناسهٔ {profile.id.toLocaleString("fa-IR")}</span>
+            <span dir="ltr">{persianDigits(profile.phone)}</span>
+            <span className={profile.has_account ? styles.accountActive : styles.accountInactive}>
+              {profile.has_account ? "حساب فعال" : "بدون حساب ورود"}</span>
+          </div>}
+        </div>
+      </div>
+      <Link className={styles.backLink} href="/panel/guests">بازگشت به بانک هشتی‌نشین‌ها <span aria-hidden="true">←</span></Link>
+    </header>
     {loading && <p role="status">در حال دریافت پروفایل…</p>}
     {error && <p className="alert error" role="alert">{error}</p>}
     {notice && <p className="alert success" role="status">{notice}</p>}
     {profile && form && <>
-      <div className="card-grid guest-summary"><Card title="کیف پول"><p>
-        {profile.wallet_balance === null ? "ناموجود" : formatToman(profile.wallet_balance)}</p></Card>
-        <Card title="حساب ورود"><p>{profile.has_account ? "فعال شده" : "هنوز ساخته نشده"}</p></Card>
-        <Card title="هشتی‌ها"><p>{profile.registrations.length.toLocaleString("fa-IR")} ثبت‌نام در تاریخچه</p></Card></div>
-      {profile.has_account && <Card title="رمز موقت حساب هشتی‌نشین">
-        <p className="muted">صدور رمز تازه، نشست‌ها و رمز قبلی را باطل می‌کند. رمز فقط همین‌جا نشان داده می‌شود و تا ۲۴ ساعت اعتبار دارد؛ آن را از مسیر امن تحویل دهید.</p>
-        <Button type="button" className="secondary" disabled={busy} onClick={issueTempPassword}>
-          صدور رمز موقت</Button>
-        {tempPassword && <div role="status" className="alert success">
-          <p>رمز موقت: <code dir="ltr">{tempPassword}</code></p>
-          <Button type="button" className="secondary" onClick={() => setTempPassword("")}>
-            پنهان کردن رمز</Button></div>}
-      </Card>}
-      <GuestFinance profile={profile} onChanged={refreshFinance} />
-      <Card title="اطلاعات هشتی‌نشین"><form className="form-stack" onSubmit={save}>
+      <div className={styles.summary} aria-label="خلاصهٔ وضعیت هشتی‌نشین">
+        <div><span>موجودی کیف پول</span><strong>{profile.wallet_balance === null ? "ناموجود" :
+          formatToman(profile.wallet_balance)}</strong></div>
+        <div><span>بدهی هشتی‌ها</span><strong>{formatToman(profile.finance_overview.total_debt)}</strong></div>
+        <div><span>ماندهٔ بدهی پس از اعتبار</span><strong>{formatToman(profile.finance_overview.net_debt)}</strong></div>
+        <div><span>هشتی‌های ثبت‌نام‌شده</span><strong>{profile.registrations.length.toLocaleString("fa-IR")}</strong></div>
+      </div>
+      <nav className={styles.quickNav} aria-label="بخش‌های پرونده">
+        <a href="#guest-information">اطلاعات</a><a href="#guest-finance">مالی</a>
+        <a href="#guest-interests">علاقه‌مندی‌ها</a><a href="#guest-registrations">هشتی‌ها</a>
+        <a href="#guest-activity">سوابق و یادداشت‌ها</a>
+      </nav>
+      <div className={styles.contentGrid}>
+      <div id="guest-information" className={styles.sectionCard}><Card title="اطلاعات هشتی‌نشین"><form className="form-stack" onSubmit={save}>
         <div className="field-row"><Field id="first-name" label="نام" required value={form.first_name}
           onChange={(event) => set("first_name", event.target.value)} />
           <Field id="last-name" label="نام خانوادگی" required value={form.last_name}
@@ -164,8 +178,8 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
           <textarea id="internal-note" rows={3} value={form.internal_note ?? ""}
             onChange={(event) => set("internal_note", event.target.value || null)} /></div>
         <Button type="submit" className="primary" disabled={busy}>ذخیرهٔ اطلاعات</Button>
-      </form></Card>
-      <Card title="علاقه‌مندی‌ها"><div className="checkbox-grid">{allTags.map((tag) =>
+      </form></Card></div>
+      <div id="guest-interests" className={styles.sectionCard}><Card title="علاقه‌مندی‌ها"><div className="checkbox-grid">{allTags.map((tag) =>
         <label className="checkbox-item" key={tag.id}><input type="checkbox"
           checked={selectedTags.includes(tag.id)} onChange={() => setSelectedTags((previous) =>
             previous.includes(tag.id) ? previous.filter((id) => id !== tag.id) : [...previous, tag.id])} />
@@ -176,8 +190,38 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
           <Field id="new-tag" label="برچسب تازه" value={newTag}
             onChange={(event) => setNewTag(event.target.value)} />
           <Button type="submit" className="secondary" disabled={busy}>ساخت برچسب</Button>
-        </form></Card>
-      <Card title="یادداشت‌های پیگیری"><form className="form-stack" onSubmit={addNote}>
+        </form></Card></div>
+      </div>
+      <div id="guest-finance" className={`${styles.sectionCard} ${styles.financeSection}`}>
+        <GuestFinance profile={profile} onChanged={refreshFinance} />
+      </div>
+      <div id="guest-registrations" className={styles.sectionCard}><Card title="هشتی‌ها و وضعیت حضور">
+        <div className={styles.registrationList}>{profile.registrations.map((item) =>
+          <details className={styles.registration} key={item.id}>
+            <summary><span className={styles.registrationNumber}>هشتی {item.event.event_number.toLocaleString("fa-IR")}</span>
+              <strong>{item.event.title}</strong>
+              <span className={item.status === "active" ? styles.activeBadge : styles.inactiveBadge}>
+                {item.status === "active" ? "ثبت‌نام فعال" : "لغوشده"}</span></summary>
+            <div className={styles.registrationDetails}>
+              <div><small>زمان</small><span>{item.event.event_date ?
+                formatJalali(`${item.event.event_date}T12:00:00Z`) : "تاریخ نامشخص"}</span></div>
+              <div><small>حضور</small><span>{attendanceName(item.attendance)}</span></div>
+              <div><small>میزبان</small><span>{item.event.hosts || "—"}</span></div>
+              <div><small>دبیران</small><span>{item.event.secretaries.join("، ") || "—"}</span></div>
+              <div><small>هزینهٔ فعال</small><span>{formatToman(item.active_charge_total)}</span></div>
+              <div><small>تسویه‌شده</small><span>{formatToman(item.settled_total)}</span></div>
+              <div><small>مانده</small><span>{formatToman(item.outstanding_total)}</span></div>
+            </div>
+            {item.charges.length > 0 && <div className={styles.chargeList}>
+              <strong>ریز هزینه‌ها</strong>{item.charges.map((charge) => <p key={charge.id}>
+                {charge.type === "entry" ? "ورودی" : "سفارش"}: {charge.description} — {formatToman(charge.amount)}
+                {charge.is_cancelled && " (لغوشده)"}</p>)}
+            </div>}
+          </details>)}</div>
+        {!profile.registrations.length && <p className="muted">هنوز ثبت‌نامی ندارد.</p>}
+      </Card></div>
+      <div id="guest-activity" className={styles.activityGrid}>
+      <div className={styles.sectionCard}><Card title="یادداشت‌های پیگیری"><form className="form-stack" onSubmit={addNote}>
         <div className="field"><label htmlFor="note-type">نوع یادداشت</label>
           <select id="note-type" value={noteType} onChange={(event) =>
             setNoteType(event.target.value as "general" | "financial")}>
@@ -186,43 +230,44 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
         <div className="field"><label htmlFor="note-text">متن</label><textarea id="note-text"
           rows={3} required value={noteText} onChange={(event) => setNoteText(event.target.value)} /></div>
         <Button type="submit" className="secondary" disabled={busy}>افزودن یادداشت</Button>
-      </form><div className="guest-history">{profile.notes.map((note) =>
-        <div className="guest-history-item" key={note.id}><strong>
+      </form><div className={styles.timeline}>{profile.notes.map((note) =>
+        <div className={styles.timelineItem} key={note.id}><strong>
           {note.type === "financial" ? "پیگیری مالی" : "عمومی"}</strong>
           <small>{note.created_by} · {formatJalali(note.created_at)}</small>
           <p>{note.text}</p></div>)}</div>
-        {!profile.notes.length && <p className="muted">هنوز یادداشتی ثبت نشده است.</p>}</Card>
-      <Card title="تاریخچهٔ هشتی‌ها و حضور">
-        {profile.registrations.map((item) => <div className="guest-history-item" key={item.id}>
-          <h3>هشتی {item.event.event_number.toLocaleString("fa-IR")} · {item.event.title}</h3>
-          <p>{item.event.event_date ? formatJalali(`${item.event.event_date}T12:00:00Z`) : "تاریخ نامشخص"}
-            {item.event.hosts && ` · میزبان: ${item.event.hosts}`}</p>
-          <p>ثبت‌نام: {item.status === "active" ? "فعال" : "لغوشده"} · حضور: {attendanceName(item.attendance)}</p>
-          <p>دبیران: {item.event.secretaries.join("، ") || "—"}</p>
-          {item.charges.map((charge) => <p key={charge.id}>
-            {charge.type === "entry" ? "ورودی" : "سفارش"}: {charge.description} — {formatToman(charge.amount)}
-            {charge.is_cancelled && " (لغوشده)"}</p>)}
-          <p>هزینهٔ فعال: {formatToman(item.active_charge_total)} · تسویه‌شده: {formatToman(item.settled_total)}
-            {` · مانده: ${formatToman(item.outstanding_total)}`}</p>
-        </div>)}
-        {!profile.registrations.length && <p className="muted">هنوز ثبت‌نامی ندارد.</p>}</Card>
-      <Card title="گردش مالی"><p>پرداخت‌های ثبت‌شده: {profile.payments.length.toLocaleString("fa-IR")}</p>
-        {profile.payments.map((payment) => <p key={payment.id}>
-          رسید {payment.id.toLocaleString("fa-IR")} · {formatToman(payment.amount)} · {payment.status}
-          {` · ${formatJalali(payment.created_at)}`}</p>)}
-        <h3>تراکنش‌های کیف پول</h3>
-        {profile.wallet_transactions.map((transaction) => <p key={transaction.id}>
-          {transaction.type} · {formatToman(transaction.amount)}
-          {transaction.note && ` · ${transaction.note}`}
-          {transaction.reason && ` · دلیل: ${transaction.reason}`}
-          {transaction.actor_name && ` · ثبت‌کننده: ${transaction.actor_name}`}
-          {` · ${formatJalali(transaction.created_at)}`}</p>)}
+        {!profile.notes.length && <p className="muted">هنوز یادداشتی ثبت نشده است.</p>}</Card></div>
+      <div className={styles.sectionCard}><Card title="گردش مالی">
+        <h3>رسیدهای واریز <span>{profile.payments.length.toLocaleString("fa-IR")}</span></h3>
+        <div className={styles.timeline}>{profile.payments.map((payment) =>
+          <div className={styles.timelineItem} key={payment.id}>
+            <strong>رسید {payment.id.toLocaleString("fa-IR")} · {formatToman(payment.amount)}</strong>
+            <small>{payment.status} · {formatJalali(payment.created_at)}</small>
+          </div>)}</div>
+        <h3>تراکنش‌های کیف پول <span>{profile.wallet_transactions.length.toLocaleString("fa-IR")}</span></h3>
+        <div className={styles.timeline}>{profile.wallet_transactions.map((transaction) =>
+          <div className={styles.timelineItem} key={transaction.id}>
+            <strong>{transaction.type} · {formatToman(transaction.amount)}</strong>
+            <small>{formatJalali(transaction.created_at)}</small>
+            {transaction.note && <p>{transaction.note}</p>}
+            {transaction.reason && <p>دلیل: {transaction.reason}</p>}
+            {transaction.actor_name && <p>ثبت‌کننده: {transaction.actor_name}</p>}
+          </div>)}</div>
         {!profile.payments.length && !profile.wallet_transactions.length &&
-          <p className="muted">هنوز تراکنشی ندارد.</p>}</Card>
-      <Card title="حذف پروفایل بی‌سابقه"><p className="muted">
+          <p className="muted">هنوز تراکنشی ندارد.</p>}</Card></div>
+      </div>
+      {profile.has_account && <div className={styles.sectionCard}><Card title="رمز موقت حساب هشتی‌نشین">
+        <p className="muted">صدور رمز تازه، نشست‌ها و رمز قبلی را باطل می‌کند. رمز فقط همین‌جا نشان داده می‌شود و تا ۲۴ ساعت اعتبار دارد؛ آن را از مسیر امن تحویل دهید.</p>
+        <Button type="button" className="secondary" disabled={busy} onClick={issueTempPassword}>
+          صدور رمز موقت</Button>
+        {tempPassword && <div role="status" className="alert success">
+          <p>رمز موقت: <code dir="ltr">{tempPassword}</code></p>
+          <Button type="button" className="secondary" onClick={() => setTempPassword("")}>
+            پنهان کردن رمز</Button></div>}
+      </Card></div>}
+      <div className={`${styles.sectionCard} ${styles.dangerZone}`}><Card title="حذف پروفایل بی‌سابقه"><p className="muted">
         هشتی‌نشینِ دارای حساب ورود، یادداشت یا هر سابقهٔ هشتی و مالی حذف نمی‌شود.</p>
         <Button type="button" className="danger-button" disabled={busy} onClick={remove}>
-          حذف هشتی‌نشین</Button></Card>
+          حذف هشتی‌نشین</Button></Card></div>
     </>}
   </div></AppShell>;
 }

@@ -5,6 +5,7 @@ import { Button, Card, Field } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
 import { formatToman } from "@/lib/format";
 import { guestsApi, type GuestProfile } from "@/lib/guests";
+import styles from "./guest-profile.module.css";
 
 type Settlement = { id: number; amount: number; active_amount: number; created_at: string };
 
@@ -52,7 +53,7 @@ export function GuestFinance({ profile, onChanged }: {
     }
     if (await run(() => guestsApi.adjustWallet(profile.id,
       direction === "increase" ? value : -value, note.trim()),
-    "اصلاح کیف پول ثبت شد؛ بدهی رویدادها خودکار تسویه نشد.")) {
+    "اصلاح کیف پول ثبت شد؛ بدهی هشتی‌ها خودکار تسویه نشد.")) {
       setAdjustAmount(""); setNote("");
     }
   }
@@ -64,7 +65,7 @@ export function GuestFinance({ profile, onChanged }: {
         value > Math.min(chosen.outstanding_total, profile.wallet_balance ?? 0)) {
       setError("مبلغ تسویه باید مثبت و حداکثر برابر بدهی و موجودی باشد."); return;
     }
-    if (await run(() => guestsApi.settle(chosen.id, value), "تسویهٔ رویداد ثبت شد."))
+    if (await run(() => guestsApi.settle(chosen.id, value), "تسویهٔ هشتی ثبت شد."))
       setSettleAmount("");
   }
 
@@ -83,14 +84,15 @@ export function GuestFinance({ profile, onChanged }: {
   }
 
   return <Card title="عملیات مالی">
-    <p>بدهی رویدادها: {formatToman(profile.finance_overview.total_debt)} · بدهی خالص پس از اعتبار:
+    <div className={styles.financeOverview}><p>بدهی هشتی‌ها: {formatToman(profile.finance_overview.total_debt)} · بدهی خالص پس از اعتبار:
       {" "}{formatToman(profile.finance_overview.net_debt)}</p>
     <p>سقف بدهی: {profile.finance_overview.debt_ceiling === null ? "تعیین‌نشده" :
-      formatToman(profile.finance_overview.debt_ceiling)}</p>
+      formatToman(profile.finance_overview.debt_ceiling)}</p></div>
     {profile.finance_overview.over_ceiling && <p className="alert error" role="status">
       هشدار: بدهی خالص از سقف تعیین‌شده بیشتر است؛ ثبت هزینه مسدود نمی‌شود.</p>}
     {error && <p className="alert error" role="alert">{error}</p>}
     {notice && <p className="alert success" role="status">{notice}</p>}
+    <div className={styles.financeGrid}><section className={styles.financeAction}>
     <h3>اصلاح دستی کیف پول</h3>
     <form className="form-stack" onSubmit={adjust}>
       <div className="field-row"><div className="field"><label htmlFor="adjust-direction">نوع</label>
@@ -103,13 +105,14 @@ export function GuestFinance({ profile, onChanged }: {
         onChange={(event) => setNote(event.target.value)} required />
       <Button type="submit" className="secondary" disabled={busy}>ثبت اصلاح</Button>
     </form>
-    <h3>تسویهٔ رویداد</h3>
+    </section><section className={styles.financeAction}>
+    <h3>تسویهٔ هشتی</h3>
     <div className="field"><label htmlFor="finance-registration">ثبت‌نام</label>
       <select id="finance-registration" value={registrationId ?? ""} onChange={(event) => {
         setRegistrationId(event.target.value ? Number(event.target.value) : null);
         setRefundId(null); setSettlements([]);
-      }}><option value="">انتخاب رویداد</option>{active.map((row) =>
-        <option key={row.id} value={row.id}>هشتی {row.event.event_number} · {row.event.title}</option>)}</select>
+      }}><option value="">انتخاب هشتی</option>{active.map((row) =>
+        <option key={row.id} value={row.id}>هشتی {row.event.event_number.toLocaleString("fa-IR")} · {row.event.title}</option>)}</select>
     </div>
     {chosen && <><p>بدهی: {formatToman(chosen.outstanding_total)} · موجودی:
       {" "}{formatToman(profile.wallet_balance ?? 0)} · قابل تسویه:
@@ -124,7 +127,7 @@ export function GuestFinance({ profile, onChanged }: {
         <select id="refund-settlement" value={refundId ?? ""} onChange={(event) =>
           setRefundId(event.target.value ? Number(event.target.value) : null)}>
           <option value="">انتخاب تسویه</option>{settlements.filter((item) => item.active_amount > 0)
-            .map((item) => <option value={item.id} key={item.id}>#{item.id} · فعال:
+            .map((item) => <option value={item.id} key={item.id}>#{item.id.toLocaleString("fa-IR")} · فعال:
               {" "}{formatToman(item.active_amount)}</option>)}</select></div>
       {refundId !== null && <form className="form-stack" onSubmit={refund}>
         <Field id="refund-amount" label="مبلغ برگشت (تومان)" type="number" min={1}
@@ -133,5 +136,6 @@ export function GuestFinance({ profile, onChanged }: {
           onChange={(event) => setReason(event.target.value)} required />
         <Button type="submit" className="secondary" disabled={busy}>ثبت برگشت</Button>
       </form>}</>}
+    </section></div>
   </Card>;
 }
