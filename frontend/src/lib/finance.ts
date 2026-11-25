@@ -8,7 +8,8 @@ export type MyFinance = {
     time_text: string | null; location_mode: "exact" | "approximate" | "tba";
     location_text: string | null; location_title: string | null; entry_fee: number;
     attendance: string; is_cancelled: boolean;
-    active_charges: number; active_settlements: number; debt: number }[];
+    active_charges: number; active_settlements: number; active_discounts: number;
+    debt: number }[];
   transactions: { id: number; type: string; amount: number;
     registration_id: number | null; note: string; created_at: string }[];
 };

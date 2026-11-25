@@ -61,6 +61,7 @@ def list_event_registrations(
                       "attendance": registration.attendance,
                       "active_charge_total": state.active_charges,
                       "active_settlements": state.active_settlements,
+                      "active_discounts": state.active_discounts,
                       "debt": state.debt, "wallet_balance": wallet.balance,
                       "event_payments": payments_by_guest[guest.id]})
     return {"items": items, "total": total, "limit": limit, "offset": offset}

@@ -111,11 +111,12 @@ def export_event(
         raise HTTPException(404, "event_not_found")
     report = event_report(registration_rows(session), event, q.strip())
     columns = [("مهمان بدهکار", "name"), ("موبایل", "phone"),
-               ("کل هزینه (تومان)", "charges"), ("تسویه‌شده (تومان)", "settled"),
+               ("کل هزینه (تومان)", "charges"), ("تخفیف (تومان)", "discount"),
+               ("تسویه‌شده (تومان)", "settled"),
                ("مانده (تومان)", "debt")]
     return _download(workbook_bytes(
         f'گزارش بدهکاران هشتی {event.event_number} - {event.title}',
-        columns, report["debtors"], total_keys=("charges", "settled", "debt")),
+        columns, report["debtors"], total_keys=("charges", "discount", "settled", "debt")),
         f"hashti-event-{event.event_number}")
 
 

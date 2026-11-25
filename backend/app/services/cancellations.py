@@ -63,7 +63,7 @@ def _cancel_locked_registration(
     registration.status = "cancelled"
     session.flush()
     after = registration_finance(session, registration.id)
-    if after.active_charges or after.active_settlements or after.debt:
+    if after.active_charges or after.active_discounts or after.active_settlements or after.debt:
         raise FinanceError("finance_invariant_broken")
     refunded_total = sum(item["amount"] for item in refunds)
     session.add(AuditLog(
@@ -123,7 +123,7 @@ def reactivate_registration(
             raise FinanceError("registration_not_cancelled")
         previous_attendance = registration.attendance
         before = registration_finance(current, registration.id)
-        if before.active_charges or before.active_settlements:
+        if before.active_charges or before.active_discounts or before.active_settlements:
             raise FinanceError("finance_invariant_broken")
         registration.status = "active"
         registration.attendance = "pending"

@@ -17,7 +17,11 @@ export type GuestRegistration = {
     is_cancelled: boolean };
   charges: { id: number; type: string; description: string;
     amount: number; is_cancelled: boolean }[];
-  active_charge_total: number; settled_total: number; outstanding_total: number;
+  discounts: { id: number; amount: number; reason: string; actor_id: number;
+    actor_name: string;
+    original_discount_id: number | null; created_at: string }[];
+  active_charge_total: number; settled_total: number; discount_total: number;
+  outstanding_total: number;
 };
 export type GuestProfile = GuestSummary & {
   finance_overview: { total_debt: number; net_debt: number;
@@ -72,11 +76,13 @@ export const guestsApi = {
       method: "POST", headers: { "Idempotency-Key": crypto.randomUUID() },
       body: JSON.stringify({ amount, note }),
     }),
-  settle: (registrationId: number, amount: number) =>
+  settle: (registrationId: number, amount: number, discountAmount = 0,
+    discountReason = "") =>
     api<{ debt: number; wallet_balance: number }>(
       `/admin/finance/registrations/${registrationId}/settlements`, {
         method: "POST", headers: { "Idempotency-Key": crypto.randomUUID() },
-        body: JSON.stringify({ amount }),
+        body: JSON.stringify({ amount, discount_amount: discountAmount,
+          discount_reason: discountReason }),
       }),
   settlements: (registrationId: number) => api<{
     id: number; amount: number; active_amount: number; created_at: string

@@ -209,6 +209,7 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
               <div><small>میزبان</small><span>{item.event.hosts || "—"}</span></div>
               <div><small>دبیران</small><span>{item.event.secretaries.join("، ") || "—"}</span></div>
               <div><small>هزینهٔ فعال</small><span>{formatToman(item.active_charge_total)}</span></div>
+              <div><small>تخفیف</small><span>{formatToman(item.discount_total)}</span></div>
               <div><small>تسویه‌شده</small><span>{formatToman(item.settled_total)}</span></div>
               <div><small>مانده</small><span>{formatToman(item.outstanding_total)}</span></div>
             </div>
@@ -216,6 +217,11 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
               <strong>ریز هزینه‌ها</strong>{item.charges.map((charge) => <p key={charge.id}>
                 {charge.type === "entry" ? "ورودی" : "سفارش"}: {charge.description} — {formatToman(charge.amount)}
                 {charge.is_cancelled && " (لغوشده)"}</p>)}
+            </div>}
+            {item.discounts.length > 0 && <div className={styles.chargeList}>
+              <strong>تاریخچهٔ تخفیف</strong>{item.discounts.map((discount) => <p key={discount.id}>
+                {discount.amount > 0 ? "تخفیف" : "اصلاح تخفیف"}: {formatToman(Math.abs(discount.amount))}
+                {" "}— {discount.reason} · {discount.actor_name} · {formatJalali(discount.created_at)}</p>)}
             </div>}
           </details>)}</div>
         {!profile.registrations.length && <p className="muted">هنوز ثبت‌نامی ندارد.</p>}

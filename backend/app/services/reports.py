@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.models import (
     Event,
     EventCharge,
+    EventDiscount,
     Guest,
     GuestInterestTag,
     InterestTag,
@@ -32,6 +33,10 @@ def registration_rows(session: Session) -> list[dict]:
         (-func.sum(WalletTransaction.amount)).label("amount"),
     ).where(WalletTransaction.type.in_(["settlement", "refund"])).group_by(
         WalletTransaction.registration_id).subquery()
+    discounts = select(
+        EventDiscount.registration_id.label("registration_id"),
+        func.sum(EventDiscount.amount).label("amount"),
+    ).group_by(EventDiscount.registration_id).subquery()
     rows = session.execute(select(
         Registration.id, Registration.guest_id, Registration.status,
         Registration.attendance, Registration.created_at,
@@ -39,16 +44,18 @@ def registration_rows(session: Session) -> list[dict]:
         Guest.first_name, Guest.last_name, Guest.phone,
         func.coalesce(charges.c.entry, 0), func.coalesce(charges.c.orders, 0),
         func.coalesce(settlements.c.amount, 0),
+        func.coalesce(discounts.c.amount, 0),
     ).join(Event, Event.id == Registration.event_id)
         .join(Guest, Guest.id == Registration.guest_id)
         .outerjoin(charges, charges.c.registration_id == Registration.id)
         .outerjoin(settlements, settlements.c.registration_id == Registration.id)
+        .outerjoin(discounts, discounts.c.registration_id == Registration.id)
         .order_by(Registration.id)).all()
     result = []
     for (registration_id, guest_id, status, attendance, created_at,
          event_id, event_number, title, event_date, is_cancelled,
-         first_name, last_name, phone, entry, orders, settled) in rows:
-        entry, orders, settled = int(entry), int(orders), int(settled)
+         first_name, last_name, phone, entry, orders, settled, discount) in rows:
+        entry, orders, settled, discount = int(entry), int(orders), int(settled), int(discount)
         result.append({
             "id": registration_id, "guest_id": guest_id, "status": status,
             "attendance": attendance, "created_at": created_at,
@@ -56,8 +63,8 @@ def registration_rows(session: Session) -> list[dict]:
             "event_title": title, "event_date": event_date,
             "event_cancelled": is_cancelled, "guest_name": f"{first_name} {last_name}",
             "phone": phone, "entry": entry, "orders": orders,
-            "charges": entry + orders, "settled": settled,
-            "debt": entry + orders - settled,
+            "charges": entry + orders, "settled": settled, "discount": discount,
+            "debt": entry + orders - settled - discount,
         })
     return result
 
@@ -82,11 +89,13 @@ def event_report(rows: list[dict], event: Event, search: str = "") -> dict:
         "orders_total": sum(row["orders"] for row in active),
         "charges_total": sum(row["charges"] for row in active),
         "settled_total": sum(row["settled"] for row in active),
+        "discount_total": sum(row["discount"] for row in active),
         "debt_total": sum(row["debt"] for row in active),
         "unsettled_count": sum(row["debt"] > 0 for row in active),
         "debtors": [{"guest_id": row["guest_id"], "name": row["guest_name"],
                      "phone": row["phone"], "registration_id": row["id"],
                      "charges": row["charges"], "settled": row["settled"],
+                     "discount": row["discount"],
                      "debt": row["debt"]} for row in debtors],
     }
 

@@ -1,19 +1,17 @@
 """Atomic attendance transitions and entry-charge/refund accounting."""
 
-import hashlib
 from datetime import UTC, datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import AuditLog, EventCharge, EventSecretary, WalletTransaction
+from app.models import AuditLog, EventCharge, EventSecretary
 from app.services.auth import Actor
 from app.services.finance import (
     EffectResult,
     FinanceError,
-    active_settlement,
-    append_transaction,
     lock_registration_wallet,
+    refund_excess,
     registration_finance,
     run_idempotent,
 )
@@ -75,41 +73,8 @@ def change_attendance(
             current.flush()
             created_ids.append(entry.id)
         current.flush()
-        after_total = current.scalar(select(func.coalesce(func.sum(EventCharge.amount), 0)).where(
-            EventCharge.registration_id == registration_id,
-            EventCharge.is_cancelled.is_(False))) or 0
-        after_total = int(after_total)
-        net_settled = -int(current.scalar(select(func.coalesce(
-            func.sum(WalletTransaction.amount), 0)).where(
-                WalletTransaction.registration_id == registration_id,
-                WalletTransaction.type.in_(["settlement", "refund"]))) or 0)
-        refund_needed = max(0, net_settled - after_total)
-        refunds: list[dict] = []
-        if refund_needed:
-            settlements = current.scalars(select(WalletTransaction).where(
-                WalletTransaction.registration_id == registration_id,
-                WalletTransaction.type == "settlement",
-            ).order_by(WalletTransaction.id).with_for_update()).all()
-            for settlement in reversed(settlements):
-                available = active_settlement(current, settlement.id)
-                amount = min(refund_needed, available)
-                if amount == 0:
-                    continue
-                refund_key = "attendance:" + hashlib.sha256(
-                    f"{key}:{settlement.id}".encode()).hexdigest()
-                refund = append_transaction(
-                    current, wallet=wallet, type="refund", amount=amount,
-                    registration_id=registration_id, original_transaction_id=settlement.id,
-                    actor_type="user", actor_id=actor.id, key=refund_key,
-                    reason="attendance_changed",
-                )
-                refunds.append({"id": refund.id, "amount": amount,
-                                "settlement_id": settlement.id})
-                refund_needed -= amount
-                if refund_needed == 0:
-                    break
-            if refund_needed:
-                raise FinanceError("finance_invariant_broken")
+        refunds = refund_excess(current, registration_id=registration_id, wallet=wallet,
+                                actor_id=actor.id, key=key, reason="attendance_changed")
         registration.attendance = target
         current.flush()
         state = registration_finance(current, registration_id)

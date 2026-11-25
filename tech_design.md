@@ -143,6 +143,7 @@ settings (key-value)
 | `event_secretaries` | `event_id`, `user_id`، کلید اصلی ترکیبی `(event_id,user_id)`؛ حداقل یک دبیر در سرویس کنترل می‌شود |
 | `registrations` | `id`, `event_id`, `guest_id`, `status(active/cancelled)`, `attendance(pending/present/absent_kept/absent_forfeited)`, `source(public/admin)`, timestamps، `UNIQUE(guest_id,event_id)` |
 | `event_charges` | `id`, `registration_id`, `type(entry/order)`, `description`, `amount`, `is_cancelled`, `cancelled_at?`, `cancel_reason?`, `created_by`, `updated_at`, `created_at` |
+| `event_discounts` | `id`, `registration_id`, `original_discount_id?` برای برگشت، `amount` علامت‌دار، `reason` اجباری، `actor_id`, `idempotency_key UNIQUE`, `created_at`؛ دفتر مستقل و append-only |
 | `wallets` | `id`, `guest_id UNIQUE`, `balance NOT NULL DEFAULT 0`, timestamps؛ موجودی ذخیره‌شده کش قابل تطبیق با دفتر تراکنش‌هاست |
 | `wallet_transactions` | `id`, `wallet_id`, `type(topup/settlement/refund/manual_adjust)`, `amount` علامت‌دار و غیرصفر، `registration_id?`, `payment_submission_id?`, `original_transaction_id?` self-FK، `note`, `reason?`, `actor_type`, `actor_id`, `idempotency_key UNIQUE`, `created_at` |
 | `payment_submissions` | `id`, `guest_id`, `amount`, `tracking_code?`, `original_receipt_path?`, `display_receipt_path?`, `status(pending/approved/rejected)`, `reject_reason?`, `event_id?` فقط مسیریابی بررسی، `reviewed_by?`, `reviewed_at?`, `idempotency_key UNIQUE`, timestamps؛ حداقل کد پیگیری یا تصویر الزامی است |
@@ -375,10 +376,13 @@ active_settlement(s) = abs(amount تراکنش s) - refunded(s)
 ```text
 active_charges = مجموع amount ردیف‌های event_charges با is_cancelled = false
 active_settlements = مجموع active_settlement تمام settlementهای همان registration_id
-debt = active_charges - active_settlements
+active_discounts = مجموع ردیف‌های علامت‌دار event_discounts همان registration_id
+debt = active_charges - active_discounts - active_settlements
 ```
 
 تمام گذارها باید `debt >= 0` را حفظ کنند. API نباید بدهی منفی را صرفاً با `max(0,debt)` پنهان کند؛ پیش از commit مازاد تسویه برگردانده می‌شود.
+
+تخفیف کلی فقط برای دبیر همان رویداد و مدیر هشتی مجاز است. هر تخفیف با مبلغ مثبت و دلیل اجباری در دفتر مستقل `event_discounts` ثبت می‌شود؛ کیف پول و دفتر تراکنش‌های آن تغییر نمی‌کنند. برگشت خودکار تخفیف با ردیف منفیِ مرتبط با تخفیف اصلی ثبت می‌شود و تاریخچه حذف یا ویرایش نمی‌شود. پس از کاهش/لغو هزینه، ابتدا تخفیفِ بیش از هزینهٔ فعال برگشت داده می‌شود، سپس فقط مازادِ پرداخت واقعی به کیف پول برمی‌گردد. لغو ثبت‌نام/رویداد همهٔ تخفیف فعال را خنثی می‌کند.
 
 موجودی دفتر و موجودی کش:
 

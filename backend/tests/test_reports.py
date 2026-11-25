@@ -164,7 +164,8 @@ def test_reports_totals_filters_permissions_and_reconciliation(management_enviro
         event_export = reader.get(f"/api/admin/reports/export/events/{event_id}?q=اول")
         event_sheet = load_workbook(BytesIO(event_export.content), read_only=True).active
         assert event_sheet["B4"].value == 1
-        assert event_sheet["E3"].value == 100
+        assert event_sheet["D3"].value == 0  # discount
+        assert event_sheet["F3"].value == 100  # remaining debt
         assert reader.get("/api/admin/reports/export/guests?date_from=2030-01-02"
                           "&date_to=2029-01-01").status_code == 422
         assert reader.get("/api/admin/reports/guests?date_from=2030-01-02&date_to=2029-01-01"

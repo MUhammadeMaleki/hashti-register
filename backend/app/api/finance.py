@@ -1,7 +1,7 @@
 """Read-only reconciliation of cached wallet balances against the ledger."""
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -30,6 +30,22 @@ guest_router = APIRouter(prefix="/api/me", tags=["finance"])
 class AmountBody(BaseModel):
     model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
     amount: int = Field(gt=0)
+
+
+class AdminSettlementBody(BaseModel):
+    model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
+    amount: int = Field(ge=0)
+    discount_amount: int = Field(default=0, ge=0)
+    discount_reason: str = Field(default="", max_length=500)
+
+    @model_validator(mode="after")
+    def valid_combination(self):
+        self.discount_reason = self.discount_reason.strip()
+        if self.amount + self.discount_amount <= 0:
+            raise ValueError("payment or discount is required")
+        if self.discount_amount > 0 and not self.discount_reason:
+            raise ValueError("discount reason is required")
+        return self
 
 
 class RefundBody(AmountBody):
@@ -76,14 +92,15 @@ def _authorize(session: Session, registration_id: int, actor: Actor) -> None:
 @router.post("/registrations/{registration_id}/settlements",
              dependencies=[Depends(require_browser_origin), Depends(require_csrf)])
 def admin_settle(
-    registration_id: int, body: AmountBody,
+    registration_id: int, body: AdminSettlementBody,
     idempotency_key: str = Header(alias="Idempotency-Key"),
     actor: Actor = Depends(require_active_admin), session: Session = Depends(get_db),
 ) -> dict:
     _authorize(session, registration_id, actor)
     return _result(session, lambda: settle_registration(
         session, registration_id=registration_id, amount=body.amount,
-        actor=actor, key=idempotency_key))
+        actor=actor, key=idempotency_key, discount_amount=body.discount_amount,
+        discount_reason=body.discount_reason))
 
 
 @router.get("/registrations/{registration_id}/settlements")
@@ -160,6 +177,7 @@ def _my_registrations(session: Session, guest_id: int) -> list[dict]:
                               "is_cancelled": event.is_cancelled,
                               "active_charges": state.active_charges,
                               "active_settlements": state.active_settlements,
+                              "active_discounts": state.active_discounts,
                               "debt": state.debt})
     return registrations
 

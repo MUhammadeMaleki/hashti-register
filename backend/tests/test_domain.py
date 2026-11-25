@@ -40,7 +40,8 @@ def test_empty_schema_upgrades_to_head(postgres_engine):
             configuration.attributes["connection"] = connection
             command.upgrade(configuration, "head")
             names = set(inspect(connection).get_table_names(schema=schema))
-            assert len(names) == 19  # 18 domain tables plus Alembic version
+            assert len(names) == 20  # 19 domain tables plus Alembic version
+            assert "event_discounts" in names
             assert "wallet_transactions" in names
             assert "alembic_version" in names
         finally:

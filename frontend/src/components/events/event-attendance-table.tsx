@@ -76,7 +76,7 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
     {notice && <p className="alert success" role="status">{notice}</p>}
     {loading && <p role="status">در حال دریافت مهمان‌ها…</p>}
     <div className={`table-scroll ${styles.tableScroll}`}><table className={styles.table}><thead><tr><th>هشتی‌نشین</th><th>موبایل</th>
-      <th>ثبت‌نام</th><th>حضور</th><th>هزینهٔ فعال</th><th>تسویه</th>
+      <th>ثبت‌نام</th><th>حضور</th><th>هزینهٔ فعال</th><th>تخفیف</th><th>تسویه</th>
       <th>بدهی</th><th>اعتبار</th><th>رسید همین هشتی</th><th>سفارش‌ها</th><th>عملیات</th></tr></thead><tbody>
       {rows.map((row) => <Fragment key={row.id}><tr>
         <td><Link className={`text-link ${styles.guestName}`} href={`/panel/guests/${row.guest_id}`}>
@@ -91,6 +91,7 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
           <option value="absent_forfeited">{labels.absent_forfeited}</option>
         </select></td>
         <td>{formatToman(row.active_charge_total)}</td>
+        <td>{formatToman(row.active_discounts)}</td>
         <td>{formatToman(row.active_settlements)}</td><td>{formatToman(row.debt)}</td>
         <td>{formatToman(row.wallet_balance)}</td>
         <td>{row.event_payments.length ? <div className="event-payment-list">
@@ -112,11 +113,11 @@ export function EventAttendanceTable({ eventId, cancelled, registrationOpen, ref
           لغو ثبت‌نام</Button> : <Button type="button" className="secondary"
           disabled={cancelled || !registrationOpen || busyId !== null}
           onClick={() => changeRegistration(row)}>فعال‌سازی مجدد</Button>}</div></td>
-      </tr>{ordersId === row.id && <tr><td colSpan={11}>
+      </tr>{ordersId === row.id && <tr><td colSpan={12}>
         <EventOrders row={row} cancelled={cancelled} refresh={revision}
           onChanged={() => setRevision((value) => value + 1)} />
       </td></tr>}{settlementId === row.id && !cancelled && row.status === "active" &&
-      <tr><td colSpan={11}>
+      <tr><td colSpan={12}>
         <EventSettlement row={row} onChanged={() => {
           setSettlementId(null); setNotice("تسویهٔ رویداد ثبت شد.");
           setRevision((value) => value + 1);

@@ -53,7 +53,7 @@ def workbook_bytes(title: str, columns: list[tuple[str, str]], rows: list[dict],
                         cell.number_format = "yyyy-mm-dd hh:mm" if isinstance(
                             cell.value, datetime) else "yyyy-mm-dd"
         elif key in total_keys or key.endswith(("_balance", "_debt", "_count")) or key in {
-            "debt", "charges", "settled", "entry", "orders",
+            "debt", "charges", "discount", "settled", "entry", "orders",
         }:
             for cells in sheet.iter_cols(min_col=index, max_col=index, min_row=3,
                                          max_row=footer):

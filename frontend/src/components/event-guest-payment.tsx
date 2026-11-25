@@ -90,6 +90,7 @@ export function EventGuestPayment({ eventId, cardNumber, accountHolder, onClose 
       {finance && registration && <div className="event-guest-payment-stats">
         <p>موجودی کیف پول <strong>{formatToman(finance.wallet_balance)}</strong></p>
         <p>بدهی همین هشتی <strong>{formatToman(registration.debt)}</strong></p>
+        <p>تخفیف همین هشتی <strong>{formatToman(registration.active_discounts)}</strong></p>
         <p>تسویه‌شدهٔ همین هشتی <strong>{formatToman(registration.active_settlements)}</strong></p>
       </div>}
       <Button type="button" className="secondary event-payment-close" aria-label="بستن پنجرهٔ پرداخت"

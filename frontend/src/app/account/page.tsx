@@ -215,6 +215,7 @@ export default function AccountPage() {
                   <div className="guest-registration-facts">
                     <div><span>هزینه</span><strong>{formatToman(row.active_charges)}</strong></div>
                     <div><span>تسویه‌شده</span><strong>{formatToman(row.active_settlements)}</strong></div>
+                    <div><span>تخفیف</span><strong>{formatToman(row.active_discounts)}</strong></div>
                     <div className={row.debt > 0 ? "has-debt" : ""}><span>مانده بدهی</span><strong>{formatToman(row.debt)}</strong></div>
                   </div>
                 </div>

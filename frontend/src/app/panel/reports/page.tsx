@@ -200,14 +200,16 @@ export default function ReportsPage() {
         <p>ورودی: {formatToman(eventReport.entry_total)}</p>
         <p>سفارش‌ها: {formatToman(eventReport.orders_total)}</p>
         <p>کل هزینه: {formatToman(eventReport.charges_total)}</p>
+        <p>تخفیف: {formatToman(eventReport.discount_total)}</p>
         <p>تسویه‌شده: {formatToman(eventReport.settled_total)}</p>
         <p>مانده بدهی: {formatToman(eventReport.debt_total)}</p>
         <p>تسویه‌نشده: {eventReport.unsettled_count.toLocaleString("fa-IR")}</p>
       </div>
       <div className="table-scroll"><table><thead><tr><th>مهمان</th><th>کل هزینه</th>
-        <th>تسویه‌شده</th><th>مانده</th><th>پیگیری</th></tr></thead><tbody>
+        <th>تخفیف</th><th>تسویه‌شده</th><th>مانده</th><th>پیگیری</th></tr></thead><tbody>
         {eventReport.debtors.map((row) => <tr key={row.registration_id}>
           <td>{persianDigits(row.name)}</td><td>{formatToman(row.charges)}</td>
+          <td>{formatToman(row.discount)}</td>
           <td>{formatToman(row.settled)}</td><td>{formatToman(row.debt)}</td>
           <td><Link className="text-link" href={`/panel/guests/${row.guest_id}`}>
             پروفایل و تسویه</Link></td>

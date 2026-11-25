@@ -17,6 +17,8 @@ export function GuestFinance({ profile, onChanged }: {
   const [note, setNote] = useState("");
   const [registrationId, setRegistrationId] = useState<number | null>(null);
   const [settleAmount, setSettleAmount] = useState("");
+  const [discountAmount, setDiscountAmount] = useState("");
+  const [discountReason, setDiscountReason] = useState("");
   const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [refundId, setRefundId] = useState<number | null>(null);
   const [refundAmount, setRefundAmount] = useState("");
@@ -27,6 +29,14 @@ export function GuestFinance({ profile, onChanged }: {
   const [revision, setRevision] = useState(0);
   const active = profile.registrations.filter((row) => row.status === "active");
   const chosen = active.find((row) => row.id === registrationId);
+  const walletValue = Number(settleAmount);
+  const discountValue = Number(discountAmount);
+  const canSettle = !!chosen && !chosen.event.is_cancelled &&
+    Number.isSafeInteger(walletValue) && Number.isSafeInteger(discountValue) &&
+    walletValue >= 0 && discountValue >= 0 && walletValue + discountValue > 0 &&
+    walletValue <= (profile.wallet_balance ?? 0) &&
+    walletValue + discountValue <= chosen.outstanding_total &&
+    (discountValue === 0 || !!discountReason.trim());
 
   useEffect(() => {
     if (registrationId === null) return;
@@ -61,12 +71,18 @@ export function GuestFinance({ profile, onChanged }: {
   async function settle(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!chosen) return;
     const value = Number(settleAmount);
-    if (!Number.isSafeInteger(value) || value <= 0 ||
-        value > Math.min(chosen.outstanding_total, profile.wallet_balance ?? 0)) {
-      setError("مبلغ تسویه باید مثبت و حداکثر برابر بدهی و موجودی باشد."); return;
+    const discount = Number(discountAmount);
+    if (!Number.isSafeInteger(value) || !Number.isSafeInteger(discount) ||
+        value < 0 || discount < 0 || value + discount <= 0 ||
+        value + discount > chosen.outstanding_total ||
+        value > (profile.wallet_balance ?? 0) ||
+        (discount > 0 && !discountReason.trim())) {
+      setError("مجموع برداشت و تخفیف نباید از بدهی بیشتر شود؛ تخفیف دلیل می‌خواهد."); return;
     }
-    if (await run(() => guestsApi.settle(chosen.id, value), "تسویهٔ هشتی ثبت شد."))
-      setSettleAmount("");
+    if (await run(() => guestsApi.settle(chosen.id, value, discount,
+      discountReason.trim()), "تسویه و تخفیف هشتی ثبت شد.")) {
+      setSettleAmount(""); setDiscountAmount(""); setDiscountReason("");
+    }
   }
 
   async function refund(event: FormEvent<HTMLFormElement>) {
@@ -115,14 +131,21 @@ export function GuestFinance({ profile, onChanged }: {
         <option key={row.id} value={row.id}>هشتی {row.event.event_number.toLocaleString("fa-IR")} · {row.event.title}</option>)}</select>
     </div>
     {chosen && <><p>بدهی: {formatToman(chosen.outstanding_total)} · موجودی:
-      {" "}{formatToman(profile.wallet_balance ?? 0)} · قابل تسویه:
+      {" "}{formatToman(profile.wallet_balance ?? 0)} · قابل برداشت از کیف پول:
       {" "}{formatToman(Math.min(chosen.outstanding_total, profile.wallet_balance ?? 0))}</p>
-      <form className="form-stack" onSubmit={settle}><MoneyField id="settle-amount"
-        label="مبلغ تسویه (تومان)" value={settleAmount}
-        onValueChange={setSettleAmount} required />
-        <Button type="submit" className="secondary" disabled={busy || chosen.event.is_cancelled ||
-          Math.min(chosen.outstanding_total, profile.wallet_balance ?? 0) <= 0}>
-          تسویه با کیف پول</Button></form>
+      <p>تخفیف قبلی: {formatToman(chosen.discount_total)}</p>
+      <form className="admin-settlement-form" onSubmit={settle}><MoneyField id="settle-amount"
+        label="برداشت از کیف پول (تومان)" value={settleAmount}
+        onValueChange={setSettleAmount} placeholder="۰" />
+        <MoneyField id="discount-amount" label="تخفیف (تومان)" value={discountAmount}
+          onValueChange={setDiscountAmount} placeholder="۰" />
+        {Number(discountAmount) > 0 && <Field id="discount-reason" label="دلیل تخفیف"
+          value={discountReason} onChange={(event) => setDiscountReason(event.target.value)}
+          maxLength={500} required />}
+        <Button type="submit" className="primary admin-settlement-confirm"
+          disabled={busy || !canSettle}
+          title="ثبت تسویه و تخفیف" aria-label="ثبت تسویه و تخفیف">
+          {busy ? "…" : "✓"}</Button></form>
       <h3>برگشت تسویه</h3><div className="field"><label htmlFor="refund-settlement">تسویهٔ اصلی</label>
         <select id="refund-settlement" value={refundId ?? ""} onChange={(event) =>
           setRefundId(event.target.value ? Number(event.target.value) : null)}>

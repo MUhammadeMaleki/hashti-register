@@ -10,7 +10,16 @@ from test_management import ORIGIN, login, management_environment, write_headers
 
 from app.core.database import build_session_factory
 from app.main import create_app
-from app.models import AuditLog, Event, Guest, Registration, Setting, Wallet, WalletTransaction
+from app.models import (
+    AuditLog,
+    Event,
+    EventDiscount,
+    Guest,
+    Registration,
+    Setting,
+    Wallet,
+    WalletTransaction,
+)
 from app.seed import bootstrap_admin
 from app.services.auth import Actor
 from app.services.finance import FinanceError, registration_finance
@@ -186,6 +195,10 @@ def test_guest_ownership_and_settlement_guards(management_environment):  # noqa:
                              "other", {"amount": 1})
             assert other.status_code == 404
             path = f"/api/me/registrations/{registration_id}/settlements"
+            assert mutation(client, "POST", path, "guest-discount", {
+                "amount": 0, "discount_amount": 30,
+                "discount_reason": "غیرمجاز",
+            }).status_code == 422
             assert client.post(path, headers={"Origin": ORIGIN,
                                "Idempotency-Key": "no-csrf"},
                                json={"amount": 1}).status_code == 403
@@ -246,3 +259,77 @@ def test_two_concurrent_settlements_spend_balance_once(management_environment): 
         assert len([row for row in rows if row.type == "settlement"]) == 1
         assert session.scalar(select(func.count()).select_from(AuditLog).where(
             AuditLog.action == "registration.settled")) == 1
+
+
+def test_discount_and_payment_are_distinct_and_reconcile_after_fee_change(
+    management_environment,  # noqa: F811
+):
+    engine, settings = management_environment
+    setup_admin(engine)
+    event_id, registration_id, wallet_id = seed(engine, fee=200, number=59)
+    factory = build_session_factory(engine)
+    path = f"/api/admin/finance/registrations/{registration_id}/settlements"
+    with TestClient(create_app(settings), base_url=ORIGIN) as client:
+        login(client, "boss", "boss-password-123")
+        make_present(client, registration_id)
+        guest_id = client.get(f"/api/admin/events/{event_id}/registrations").json()[
+            "items"][0]["guest_id"]
+        assert mutation(client, "POST", path, "missing-reason", {
+            "amount": 0, "discount_amount": 20,
+        }).status_code == 422
+        assert mutation(client, "POST", path, "too-much", {
+            "amount": 0, "discount_amount": 201, "discount_reason": "بخشودگی",
+        }).status_code == 409
+        discount_only = mutation(client, "POST", path, "only-discount", {
+            "amount": 0, "discount_amount": 50, "discount_reason": "تخفیف کلی",
+        })
+        assert discount_only.status_code == 200, discount_only.text
+        assert discount_only.json()["transaction_id"] is None
+        assert discount_only.json()["debt"] == 150
+        assert mutation(client, "POST", path, "only-discount", {
+            "amount": 0, "discount_amount": 50, "discount_reason": "تخفیف کلی",
+        }).json() == discount_only.json()
+        credit = f"/api/admin/finance/guests/{guest_id}/adjustments"
+        assert mutation(client, "POST", credit, "discount-test-credit", {
+            "amount": 150, "note": "شارژ واقعی",
+        }).status_code == 200
+        combined = mutation(client, "POST", path, "combined", {
+            "amount": 100, "discount_amount": 50, "discount_reason": "بخشودگی مانده",
+        })
+        assert combined.status_code == 200, combined.text
+        assert combined.json()["debt"] == 0
+        assert combined.json()["wallet_balance"] == 50
+        report = client.get(f"/api/admin/reports/events/{event_id}").json()
+        assert (report["charges_total"], report["discount_total"],
+                report["settled_total"], report["debt_total"]) == (200, 100, 100, 0)
+        profile = client.get(f"/api/admin/guests/{guest_id}").json()
+        assert profile["registrations"][0]["discount_total"] == 100
+        assert profile["finance_overview"]["total_debt"] == 0
+        partial_drop = mutation(client, "PATCH", f"/api/admin/events/{event_id}/entry-fee",
+                                "partial-fee-drop", {"amount": 120})
+        assert partial_drop.status_code == 200, partial_drop.text
+        with factory() as session:
+            state = registration_finance(session, registration_id)
+            assert (state.active_charges, state.active_discounts,
+                    state.active_settlements, state.debt) == (120, 100, 20, 0)
+            assert session.get(Wallet, wallet_id).balance == 130
+        lowered = mutation(client, "PATCH", f"/api/admin/events/{event_id}/entry-fee",
+                           "lower-fee-with-discount", {"amount": 80})
+        assert lowered.status_code == 200, lowered.text
+        with factory() as session:
+            state = registration_finance(session, registration_id)
+            assert (state.active_charges, state.active_discounts,
+                    state.active_settlements, state.debt) == (80, 80, 0, 0)
+            assert session.get(Wallet, wallet_id).balance == 150
+            discounts = session.scalars(select(EventDiscount).where(
+                EventDiscount.registration_id == registration_id)).all()
+            assert len(discounts) == 3
+            assert sum(item.amount for item in discounts) == 80
+        cancelled = mutation(client, "POST", f"/api/admin/registrations/{registration_id}/cancel",
+                             "cancel-discounted-registration")
+        assert cancelled.status_code == 200, cancelled.text
+        with factory() as session:
+            state = registration_finance(session, registration_id)
+            assert (state.active_charges, state.active_discounts,
+                    state.active_settlements, state.debt) == (0, 0, 0, 0)
+            assert session.get(Wallet, wallet_id).balance == 150

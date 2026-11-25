@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.models import (
     Event,
     EventCharge,
+    EventDiscount,
     IdempotencyRequest,
     PaymentSubmission,
     Registration,
@@ -41,6 +42,7 @@ class FinanceState:
     active_charges: int
     active_settlements: int
     debt: int
+    active_discounts: int = 0
 
 
 def run_idempotent(
@@ -103,15 +105,59 @@ def lock_registration_wallet(
 def registration_finance(session: Session, registration_id: int) -> FinanceState:
     charges = session.scalar(select(func.coalesce(func.sum(EventCharge.amount), 0)).where(
         EventCharge.registration_id == registration_id, EventCharge.is_cancelled.is_(False))) or 0
+    discounts = session.scalar(select(func.coalesce(func.sum(EventDiscount.amount), 0)).where(
+        EventDiscount.registration_id == registration_id)) or 0
     net_settlements = session.scalar(select(func.coalesce(func.sum(WalletTransaction.amount), 0))
         .where(WalletTransaction.registration_id == registration_id,
                WalletTransaction.type.in_(["settlement", "refund"]))) or 0
     charges = int(charges)
+    discounts = int(discounts)
     active_settlements = -int(net_settlements)
-    debt = charges - active_settlements
-    if active_settlements < 0 or debt < 0:
+    debt = charges - discounts - active_settlements
+    if active_settlements < 0 or discounts < 0 or debt < 0:
         raise FinanceError("finance_invariant_broken")
-    return FinanceState(charges, active_settlements, debt)
+    return FinanceState(charges, active_settlements, debt, discounts)
+
+
+def reduce_discount_excess(
+    session: Session, *, registration_id: int, charges: int,
+    actor_id: int, key: str, reason: str,
+) -> list[dict]:
+    """Retain discounts up to remaining charges; reverse newest grants first."""
+    active = int(session.scalar(select(func.coalesce(func.sum(EventDiscount.amount), 0)).where(
+        EventDiscount.registration_id == registration_id)) or 0)
+    remaining = max(0, active - charges)
+    reversals: list[dict] = []
+    if not remaining:
+        return reversals
+    grants = session.scalars(select(EventDiscount).where(
+        EventDiscount.registration_id == registration_id,
+        EventDiscount.amount > 0,
+    ).order_by(EventDiscount.id.desc()).with_for_update()).all()
+    for grant in grants:
+        reversed_amount = int(session.scalar(select(func.coalesce(
+            func.sum(EventDiscount.amount), 0)).where(
+                EventDiscount.original_discount_id == grant.id)) or 0)
+        available = grant.amount + reversed_amount
+        amount = min(remaining, available)
+        if amount <= 0:
+            continue
+        reversal = EventDiscount(
+            registration_id=registration_id, original_discount_id=grant.id,
+            amount=-amount, reason=reason, actor_id=actor_id,
+            idempotency_key="discount-reversal:" + hashlib.sha256(
+                f"{key}:{registration_id}:{grant.id}".encode()).hexdigest(),
+        )
+        session.add(reversal)
+        session.flush()
+        reversals.append({"id": reversal.id, "original_discount_id": grant.id,
+                          "amount": amount})
+        remaining -= amount
+        if not remaining:
+            break
+    if remaining:
+        raise FinanceError("finance_invariant_broken")
+    return reversals
 
 
 def active_settlement(session: Session, settlement_id: int) -> int:
@@ -132,14 +178,19 @@ def refund_excess(
     session: Session, *, registration_id: int, wallet: Wallet,
     actor_id: int, key: str, reason: str,
 ) -> list[dict]:
-    """Refund only settlement above active charges, newest original first."""
+    """Trim excess discounts, then refund wallet payments above net charges."""
     charges = session.scalar(select(func.coalesce(func.sum(EventCharge.amount), 0)).where(
         EventCharge.registration_id == registration_id,
         EventCharge.is_cancelled.is_(False))) or 0
+    charges = int(charges)
+    reduce_discount_excess(session, registration_id=registration_id, charges=charges,
+                           actor_id=actor_id, key=key, reason=reason)
+    discounts = int(session.scalar(select(func.coalesce(func.sum(EventDiscount.amount), 0)).where(
+        EventDiscount.registration_id == registration_id)) or 0)
     net = session.scalar(select(func.coalesce(func.sum(WalletTransaction.amount), 0)).where(
         WalletTransaction.registration_id == registration_id,
         WalletTransaction.type.in_(["settlement", "refund"]))) or 0
-    remaining = max(0, -int(net) - int(charges))
+    remaining = max(0, -int(net) - (charges - discounts))
     if not remaining:
         return []
     settlements = session.scalars(select(WalletTransaction).where(

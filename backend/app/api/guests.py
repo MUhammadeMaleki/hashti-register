@@ -13,6 +13,7 @@ from app.models import (
     AuditLog,
     Event,
     EventCharge,
+    EventDiscount,
     EventSecretary,
     Guest,
     GuestAccount,
@@ -151,6 +152,9 @@ def profile(session: Session, guest: Guest) -> dict:
         charges = session.scalars(select(EventCharge).where(
             EventCharge.registration_id == registration.id
         ).order_by(EventCharge.id)).all()
+        discounts = session.scalars(select(EventDiscount).where(
+            EventDiscount.registration_id == registration.id
+        ).order_by(EventDiscount.id)).all()
         finance = registration_finance(session, registration.id)
         history.append({
             "id": registration.id, "status": registration.status,
@@ -163,8 +167,14 @@ def profile(session: Session, guest: Guest) -> dict:
             "charges": [{"id": charge.id, "type": charge.type,
                          "description": charge.description, "amount": charge.amount,
                          "is_cancelled": charge.is_cancelled} for charge in charges],
+            "discounts": [{"id": item.id, "amount": item.amount,
+                           "reason": item.reason, "actor_id": item.actor_id,
+                           "actor_name": session.get(User, item.actor_id).full_name,
+                           "original_discount_id": item.original_discount_id,
+                           "created_at": item.created_at} for item in discounts],
             "active_charge_total": finance.active_charges,
             "settled_total": finance.active_settlements,
+            "discount_total": finance.active_discounts,
             "outstanding_total": finance.debt,
         })
     data["registrations"] = history

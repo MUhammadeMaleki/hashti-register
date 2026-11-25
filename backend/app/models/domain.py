@@ -301,6 +301,38 @@ class EventCharge(Timestamped, Base):
     )
 
 
+class EventDiscount(Base):
+    __tablename__ = "event_discounts"
+    __table_args__ = (
+        CheckConstraint("amount <> 0", name="amount_nonzero"),
+        CheckConstraint("NULLIF(BTRIM(reason), '') IS NOT NULL", name="reason_required"),
+        CheckConstraint(
+            "(amount > 0 AND original_discount_id IS NULL) OR "
+            "(amount < 0 AND original_discount_id IS NOT NULL)",
+            name="reversal_link_valid",
+        ),
+        UniqueConstraint("idempotency_key"),
+        Index("ix_event_discounts_registration", "registration_id"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    registration_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("registrations.id", ondelete="RESTRICT"), nullable=False
+    )
+    original_discount_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("event_discounts.id", ondelete="RESTRICT")
+    )
+    amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    actor_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    idempotency_key: Mapped[str] = mapped_column(String(100), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
 class Wallet(Timestamped, Base):
     __tablename__ = "wallets"
     __table_args__ = (

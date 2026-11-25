@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models import (
     AuditLog,
+    EventDiscount,
     EventSecretary,
     GuestAccount,
     Registration,
@@ -48,9 +49,15 @@ def authorize_registration(session: Session, registration_id: int, actor: Actor)
 
 def settle_registration(
     session: Session, *, registration_id: int, amount: int, actor: Actor, key: str,
+    discount_amount: int = 0, discount_reason: str = "",
 ) -> EffectResult:
-    if amount <= 0:
+    discount_reason = discount_reason.strip()
+    if (isinstance(amount, bool) or not isinstance(amount, int) or amount < 0 or
+            isinstance(discount_amount, bool) or not isinstance(discount_amount, int) or
+            discount_amount < 0 or amount + discount_amount <= 0):
         raise FinanceError("invalid_amount", 422)
+    if discount_amount and (actor.type != "user" or not discount_reason):
+        raise FinanceError("invalid_discount", 422)
 
     def effect(current: Session) -> EffectResult:
         event, registration, wallet = lock_registration_wallet(current, registration_id)
@@ -58,33 +65,53 @@ def settle_registration(
         if event.is_cancelled or registration.status != "active":
             raise FinanceError("settlement_not_allowed")
         state = registration_finance(current, registration_id)
-        if amount > state.debt:
+        if amount + discount_amount > state.debt:
             raise FinanceError("settlement_exceeds_debt")
         if amount > wallet.balance:
             raise FinanceError("insufficient_balance")
-        transaction = append_transaction(
-            current, wallet=wallet, type="settlement", amount=-amount,
-            registration_id=registration_id, actor_type=actor.type, actor_id=actor.id,
-            key=_ledger_key("settlement", actor, key),
-        )
+        discount = None
+        if discount_amount:
+            discount = EventDiscount(
+                registration_id=registration_id, amount=discount_amount,
+                reason=discount_reason, actor_id=actor.id,
+                idempotency_key=_ledger_key("discount", actor, key),
+            )
+            current.add(discount)
+            current.flush()
+        transaction = None
+        if amount:
+            transaction = append_transaction(
+                current, wallet=wallet, type="settlement", amount=-amount,
+                registration_id=registration_id, actor_type=actor.type, actor_id=actor.id,
+                key=_ledger_key("settlement", actor, key),
+            )
         after = registration_finance(current, registration_id)
         current.add(AuditLog(
             actor_type=actor.type, actor_id=actor.id, action="registration.settled",
             entity_type="registration", entity_id=registration_id,
             before_json={"debt": state.debt, "wallet_balance": wallet.balance + amount},
             after_json={"debt": after.debt, "wallet_balance": wallet.balance},
-            metadata_json={"idempotency_key": key, "transaction_id": transaction.id,
-                           "amount": amount},
+            metadata_json={"idempotency_key": key,
+                           "transaction_id": transaction.id if transaction else None,
+                           "discount_id": discount.id if discount else None,
+                           "amount": amount, "discount_amount": discount_amount,
+                           "discount_reason": discount_reason if discount else None},
         ))
-        return EffectResult(200, {"transaction_id": transaction.id,
+        return EffectResult(200, {"transaction_id": transaction.id if transaction else None,
+                                  "discount_id": discount.id if discount else None,
                                   "registration_id": registration_id, "amount": amount,
+                                  "discount_amount": discount_amount,
                                   "debt": after.debt, "wallet_balance": wallet.balance},
-                            "wallet_transaction", transaction.id)
+                            "wallet_transaction" if transaction else "event_discount",
+                            transaction.id if transaction else discount.id)
 
+    payload = {"registration_id": registration_id, "amount": amount}
+    if discount_amount:
+        payload.update({"discount_amount": discount_amount,
+                        "discount_reason": discount_reason})
     return run_idempotent(session, actor_type=actor.type, actor_id=actor.id,
                           operation="registration.settle", key=key,
-                          payload={"registration_id": registration_id, "amount": amount},
-                          effect=effect)
+                          payload=payload, effect=effect)
 
 
 def refund_settlement(

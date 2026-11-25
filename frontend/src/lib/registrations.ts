@@ -8,6 +8,7 @@ export type EventRegistration = {
   id: number; guest_id: number; first_name: string; last_name: string; phone: string;
   status: "active" | "cancelled"; attendance: Attendance;
   active_charge_total: number; active_settlements: number;
+  active_discounts: number;
   debt: number; wallet_balance: number;
   event_payments: { id: number; amount: number;
     status: "pending" | "approved" | "rejected"; created_at: string }[];

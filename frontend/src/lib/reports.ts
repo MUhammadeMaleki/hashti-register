@@ -13,10 +13,10 @@ export type EventReport = {
   event: { id: number; event_number: number; title: string;
     event_date: string | null; is_cancelled: boolean };
   present_count: number; entry_total: number; orders_total: number;
-  charges_total: number; settled_total: number; debt_total: number;
+  charges_total: number; settled_total: number; discount_total: number; debt_total: number;
   unsettled_count: number;
   debtors: { guest_id: number; name: string; phone: string; registration_id: number;
-    charges: number; settled: number; debt: number }[];
+    charges: number; settled: number; discount: number; debt: number }[];
 };
 export type FinancialGuest = {
   guest_id: number; name: string; phone: string; wallet_balance: number;
