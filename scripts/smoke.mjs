@@ -10,15 +10,14 @@ async function request(url) {
 }
 
 const html = await (await request(frontend)).text();
-assert.match(html, /<html[^>]*lang="fa"/);
-assert.match(html, /<html[^>]*dir="rtl"/);
-assert.match(html, /هشتی‌های آینده/);
-assert.match(html, /ورود به سامانه/);
+assert.ok(/<html[^>]*lang="fa"/.test(html), 'Homepage must declare Persian.');
+assert.ok(/<html[^>]*dir="rtl"/.test(html), 'Homepage must be RTL.');
+assert.ok(html.includes('جدیدترین هشتی‌ها'), 'Homepage must show the latest events heading.');
 await request(`${frontend}/archive`);
 await request(`${frontend}/upcoming`);
 const loginHtml = await (await request(`${frontend}/login`)).text();
-assert.match(loginHtml, /ورود مهمان/);
-assert.match(loginHtml, /ورود دبیر/);
+assert.ok(loginHtml.includes('ورود هشتی‌نشین'), 'Guest login must be available.');
+assert.ok(loginHtml.includes('ورود دبیر'), 'Secretary login must be available.');
 await request(`${frontend}/panel/events`);
 await request(`${frontend}/panel/events/new`);
 await request(`${frontend}/panel/locations`);
