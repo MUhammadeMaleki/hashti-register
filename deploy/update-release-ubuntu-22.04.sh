@@ -42,9 +42,9 @@ ln -sfn "$release" /srv/hashti/current
 systemctl restart hashti-api.service hashti-web.service
 if ! systemctl is-active --quiet hashti-api.service ||
    ! systemctl is-active --quiet hashti-web.service ||
-   ! curl --fail --silent --show-error --retry 10 --retry-delay 2 \
+   ! curl --fail --silent --show-error --retry 15 --retry-delay 2 --retry-connrefused \
      http://127.0.0.1:8000/api/health/ready >/dev/null ||
-   ! curl --fail --silent --show-error --retry 10 --retry-delay 2 \
+   ! curl --fail --silent --show-error --retry 15 --retry-delay 2 --retry-connrefused \
      http://127.0.0.1:3000/ >/dev/null; then
   ln -sfn "$previous" /srv/hashti/current
   systemctl restart hashti-api.service hashti-web.service
