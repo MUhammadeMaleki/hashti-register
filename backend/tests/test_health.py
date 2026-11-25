@@ -36,7 +36,7 @@ def test_real_postgresql_and_migration(postgres_engine):
         assert connection.execute(text("SELECT current_database()")).scalar_one().endswith("_test")
         assert connection.execute(text("SELECT version()")).scalar_one().startswith("PostgreSQL")
         assert connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one() == (
-            "e53b72f6a0c4"
+            "f6c172a43b8e"
         )
 
 

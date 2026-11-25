@@ -253,3 +253,55 @@ def test_concurrent_number_collision_and_safe_deletes(management_environment):  
     assert sorted(results) == [201, 409]
     with factory() as session:
         assert session.scalar(select(Event.event_number).where(Event.event_number == 9)) == 9
+
+
+def test_cancel_compacts_future_numbers_and_reactivation_gets_next_free(
+    management_environment,  # noqa: F811
+):
+    engine, settings = management_environment
+    factory = build_session_factory(engine)
+    today = datetime.now(ZoneInfo("Asia/Tehran")).date()
+    with factory() as session:
+        bootstrap_admin(session, username="boss", full_name="مدیر", password="boss-password-123")
+    with factory() as session, session.begin():
+        events = [Event(event_number=number, title=f"هشتی {number}",
+                        event_date=today - timedelta(days=1) if number == 1
+                        else today + timedelta(days=1)) for number in range(1, 5)]
+        session.add_all(events)
+        session.flush()
+        ids = [event.id for event in events]
+    with TestClient(create_app(settings), base_url=ORIGIN) as admin:
+        login(admin, "boss", "boss-password-123")
+        cancel = admin.post(f"/api/admin/events/{ids[1]}/cancel", headers={
+            **write_headers(admin), "Idempotency-Key": "cancel-second"})
+        assert cancel.status_code == 200, cancel.text
+        with factory() as session:
+            rows = [session.get(Event, event_id) for event_id in ids]
+            assert [row.event_number for row in rows] == [1, 2, 2, 3]
+            assert rows[1].number_released is True
+            assert rows[0].event_number == 1
+        assert admin.get("/api/admin/events/next-number").json()["suggested_number"] == 4
+        secretary_id = secretary(admin, "numbers-secretary")
+        created = admin.post("/api/admin/events", headers=write_headers(admin),
+                             json=event_body(4, event_date=str(today + timedelta(days=2)),
+                                             start_time=None,
+                                             secretary_ids=[secretary_id]))
+        assert created.status_code == 201, created.text
+        restored = admin.post(f"/api/admin/events/{ids[1]}/reactivate", headers={
+            **write_headers(admin), "Idempotency-Key": "restore-second"})
+        assert restored.status_code == 200, restored.text
+        assert restored.json()["event_number"] == 5
+        with factory() as session:
+            assert session.get(Event, ids[1]).number_released is False
+            assert session.get(Event, ids[1]).event_number == 5
+        archived = admin.patch(f"/api/admin/events/{ids[0]}",
+                               headers=write_headers(admin), json={"event_number": 9})
+        assert archived.status_code == 409
+        assert archived.json()["detail"] == "event_number_archived"
+        archived_cancel = admin.post(f"/api/admin/events/{ids[0]}/cancel", headers={
+            **write_headers(admin), "Idempotency-Key": "cancel-archived"})
+        assert archived_cancel.status_code == 200, archived_cancel.text
+        with factory() as session:
+            past = session.get(Event, ids[0])
+            assert past.event_number == 1
+            assert past.number_released is False

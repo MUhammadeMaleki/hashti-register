@@ -32,6 +32,7 @@ from app.models import (
     User,
 )
 from app.services.auth import Actor
+from app.services.event_numbers import is_archived, lock_numbers, next_number, release_and_compact
 
 router = APIRouter(prefix="/api/admin", tags=["events"])
 POSTER_DIR = uploads_root() / "posters"
@@ -216,8 +217,8 @@ def list_active_secretaries(
 def next_event_number(
     _: Actor = Depends(require_active_admin), session: Session = Depends(get_db)
 ) -> dict:
-    # Advisory only: the database unique constraint resolves concurrent creates.
-    return {"suggested_number": (session.scalar(select(func.max(Event.event_number))) or 0) + 1}
+    # Advisory only: the partial unique index resolves concurrent creates.
+    return {"suggested_number": next_number(session)}
 
 
 @router.get("/events")
@@ -299,6 +300,7 @@ def create_event(
         ids.add(actor.id)
     try:
         with session.begin():
+            lock_numbers(session)
             active_secretaries(session, ids)
             validate_event(session, data)
             event = Event(**data)
@@ -383,11 +385,15 @@ def update_event(
         raise HTTPException(status_code=422, detail="invalid_update")
     try:
         with session.begin():
+            lock_numbers(session)
             event = session.scalar(select(Event).where(Event.id == event_id).with_for_update())
             if event is None:
                 raise HTTPException(status_code=404, detail="event_not_found")
             if event.is_cancelled:
                 raise HTTPException(status_code=409, detail="event_cancelled")
+            if ("event_number" in changes and changes["event_number"] != event.event_number
+                    and is_archived(event)):
+                raise HTTPException(status_code=409, detail="event_number_archived")
             changing_fee = "entry_fee" in changes and changes["entry_fee"] != event.entry_fee
             has_registration = session.scalar(
                 select(Registration.id).where(Registration.event_id == event_id).limit(1)
@@ -454,6 +460,7 @@ def delete_event(
 ) -> None:
     try:
         with session.begin():
+            lock_numbers(session)
             event = session.scalar(select(Event).where(Event.id == event_id).with_for_update())
             has_registration = session.scalar(select(Registration.id).where(
                 Registration.event_id == event_id).limit(1)) is not None
@@ -463,8 +470,10 @@ def delete_event(
                 raise HTTPException(status_code=409, detail="event_has_history")
             snapshot = {"event_number": event.event_number, "title": event.title,
                         "event_date": str(event.event_date), "location_id": event.location_id}
+            release_and_compact(session, event, actor_id=actor.id)
             session.execute(delete(EventSecretary).where(EventSecretary.event_id == event_id))
             session.delete(event)
+            session.flush()
             log_change(session, actor=actor, action="event.deleted", entity_type="event",
                        entity_id=event_id, before=snapshot)
     except IntegrityError:

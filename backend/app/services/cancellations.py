@@ -15,6 +15,7 @@ from app.models import (
     WalletTransaction,
 )
 from app.services.auth import Actor
+from app.services.event_numbers import lock_numbers, next_number, release_and_compact
 from app.services.finance import (
     EffectResult,
     FinanceError,
@@ -155,6 +156,7 @@ def change_event_cancellation(
     operation = "event.reactivate" if reactivate else "event.cancel"
 
     def effect(current: Session) -> EffectResult:
+        lock_numbers(current)
         event = current.scalar(select(Event).where(Event.id == event_id).with_for_update())
         if event is None:
             raise FinanceError("event_not_found", 404)
@@ -166,12 +168,17 @@ def change_event_cancellation(
                                       "changed": False, "registrations": 0,
                                       "refunded_total": 0}, "event", event_id)
         if reactivate:
+            old_number = event.event_number
+            if event.number_released:
+                event.event_number = next_number(current)
+                event.number_released = False
             event.is_cancelled = False
             current.add(AuditLog(
                 actor_type="user", actor_id=actor.id, action="event.reactivated",
                 entity_type="event", entity_id=event_id,
-                before_json={"is_cancelled": True},
+                before_json={"is_cancelled": True, "event_number": old_number},
                 after_json={"is_cancelled": False,
+                            "event_number": event.event_number,
                             "registration_status": event.registration_status},
                 metadata_json={"idempotency_key": key, "registrations": 0,
                                "refunded_total": 0},
@@ -187,12 +194,13 @@ def change_event_cancellation(
             count = len(results)
             refunded_total = sum(row["refunded_total"] for row in results)
             event.is_cancelled = True
+            release_and_compact(current, event, actor_id=actor.id)
             current.add(AuditLog(
                 actor_type="user", actor_id=actor.id, action="event.cancelled",
                 entity_type="event", entity_id=event_id,
                 before_json={"is_cancelled": False,
                              "registration_status": event.registration_status},
-                after_json={"is_cancelled": True,
+                after_json={"is_cancelled": True, "number_released": event.number_released,
                             "registration_status": event.registration_status},
                 metadata_json={"idempotency_key": key, "registrations": count,
                                "refunded_total": refunded_total,
@@ -200,6 +208,7 @@ def change_event_cancellation(
             ))
         return EffectResult(200, {"event_id": event_id,
                                   "is_cancelled": event.is_cancelled,
+                                  "event_number": event.event_number,
                                   "registration_status": event.registration_status,
                                   "changed": True, "registrations": count,
                                   "refunded_total": refunded_total}, "event", event_id)

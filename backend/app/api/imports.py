@@ -20,6 +20,7 @@ from app.models import AuditLog, Event, Guest, Location, Wallet
 from app.services.auth import Actor
 from app.services.event_import import parse_workbook as parse_events
 from app.services.event_import import template_bytes as event_template_bytes
+from app.services.event_numbers import lock_numbers
 from app.services.guest_import import parse_workbook, template_bytes
 from app.services.import_files import preview_token, read_xlsx, verify_preview_token
 
@@ -106,7 +107,7 @@ async def event_preview(
     candidates, errors, total = parse_events(content)
     numbers = [item["event_number"] for item in candidates]
     existing = set(session.scalars(select(Event.event_number).where(
-        Event.event_number.in_(numbers))))
+        Event.event_number.in_(numbers), Event.number_released.is_(False))))
     for item in candidates:
         if item["event_number"] in existing:
             errors.append({"row": item["row"], "reason": "شماره رویداد از قبل ثبت شده است"})
@@ -129,10 +130,12 @@ async def event_confirm(
     candidates, errors, total = parse_events(content)
     imported = 0
     with session.begin():
+        lock_numbers(session)
         locations = {(row.title.casefold(), row.address.casefold()): row.id
                      for row in session.scalars(select(Location))}
         for item in candidates:
-            if session.scalar(select(Event.id).where(Event.event_number == item["event_number"])):
+            if session.scalar(select(Event.id).where(
+                Event.event_number == item["event_number"], Event.number_released.is_(False))):
                 errors.append({"row": item["row"], "reason": "شماره رویداد از قبل ثبت شده است"})
                 continue
             name, address = item["location_name"], item["location_address"]

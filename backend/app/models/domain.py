@@ -179,7 +179,8 @@ class Location(Timestamped, Base):
 class Event(Timestamped, Base):
     __tablename__ = "events"
     __table_args__ = (
-        UniqueConstraint("event_number"),
+        Index("uq_events_active_event_number", "event_number", unique=True,
+              postgresql_where=text("number_released = false")),
         CheckConstraint("event_number > 0", name="event_number_positive"),
         CheckConstraint("entry_fee >= 0", name="entry_fee_nonnegative"),
         CheckConstraint("capacity IS NULL OR capacity >= 0", name="capacity_nonnegative"),
@@ -199,6 +200,9 @@ class Event(Timestamped, Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     event_number: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    number_released: Mapped[bool] = mapped_column(
+        Boolean, server_default=text("false"), nullable=False
+    )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     poster_path: Mapped[str | None] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text)
