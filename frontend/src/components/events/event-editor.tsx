@@ -9,6 +9,7 @@ import { EventRegistrationManager } from "@/components/events/event-registration
 import { errorMessage } from "@/lib/api";
 import { eventsApi, type EventRecord, type Location, type Secretary } from "@/lib/events";
 import { isoToJalali, jalaliToIso } from "@/lib/format";
+import styles from "./event-editor.module.css";
 
 type Form = {
   event_number: string; title: string; description: string; event_date: string;
@@ -231,10 +232,12 @@ export function EventEditor({ eventId }: { eventId?: number }) {
   }
 
   if (loading) return <p role="status">در حال دریافت اطلاعات رویداد…</p>;
-  return <div className="editor-stack">
-    <div className="section-heading"><div><h2>{eventId ? "ویرایش رویداد" : "رویداد جدید"}</h2>
+  return <div className={`editor-stack ${!eventId ? styles.creationPage : ""}`}>
+    <div className={`section-heading ${!eventId ? styles.creationHero : ""}`}><div>
+      {!eventId && <span className={styles.heroEyebrow}>پنل مدیریت / ساخت هشتی</span>}
+      <h2>{eventId ? "ویرایش رویداد" : "یک هشتی تازه بسازیم"}</h2>
       <p className="muted">شمارهٔ پیشنهادی قابل تغییر است؛ تکراری‌بودن هنگام ذخیره کنترل می‌شود.</p></div>
-      <Link className="button secondary" href="/panel/events">فهرست رویدادها</Link></div>
+      <Link className="button secondary" href="/panel/events">بازگشت به هشتی‌ها</Link></div>
     {error && <p role="alert" className="alert error">{error}</p>}
     {notice && <p role="status" className="alert success">{notice}</p>}
     {event?.is_cancelled && <p className="alert error">این رویداد لغو شده است و ویرایش اطلاعات آن فعلاً بسته است.</p>}
@@ -245,7 +248,9 @@ export function EventEditor({ eventId }: { eventId?: number }) {
         <Button type="button" className="danger-button" disabled={busy}
           onClick={() => changeCancellation(false)}>لغو رویداد و ثبت‌نام‌های فعال</Button>}
     </Card>}
-    <Card title="اطلاعات رویداد"><form onSubmit={save} className="form-stack">
+    <Card title="اطلاعات هشتی"><form onSubmit={save} className="form-stack">
+      <section className={styles.formSection}>
+        {!eventId && <div className={styles.sectionIntro}><span>۰۱</span><div><h3>هویت هشتی</h3><p>نام و موضوعی که هشتی‌نشین‌ها می‌بینند.</p></div></div>}
       <div className="field-row"><Field id="event-number" label="شماره هشتی" type="number" min={1}
         value={form.event_number} onChange={(e) => set("event_number", e.target.value)} required />
         <Field id="event-title" label="عنوان" value={form.title}
@@ -253,6 +258,10 @@ export function EventEditor({ eventId }: { eventId?: number }) {
       <div className="field"><label htmlFor="event-description">توضیحات</label><textarea
         id="event-description" rows={3} value={form.description}
         onChange={(e) => set("description", e.target.value)} /></div>
+      </section>
+      <section className={styles.formSection}>
+        {!eventId && <div className={styles.sectionIntro}><span>۰۲</span><div><h3>زمان و مکان</h3><p>برای هرکدام، وضعیت اعلام را جداگانه مشخص کنید.</p></div></div>}
+      <div className={styles.scheduleGrid}><div className={styles.scheduleBlock}>
       <div className="field"><label htmlFor="time-mode">نحوهٔ اعلام زمان</label>
         <select id="time-mode" value={form.time_mode}
           onChange={(e) => setTimeMode(e.target.value as Form["time_mode"])}>
@@ -266,6 +275,7 @@ export function EventEditor({ eventId }: { eventId?: number }) {
       {form.time_mode === "approximate" && <Field id="time-text" label="شرح زمان تقریبی"
         value={form.time_text} onChange={(e) => set("time_text", e.target.value)}
         hint="تاریخ یا ساعت حدودی، یا «در حال هماهنگی» را آزادانه بنویسید." required />}
+      </div><div className={styles.scheduleBlock}>
       <div className="field"><label htmlFor="location-mode">نحوهٔ اعلام مکان</label>
         <select id="location-mode" value={form.location_mode}
           onChange={(e) => setLocationMode(e.target.value as Form["location_mode"])}>
@@ -279,7 +289,11 @@ export function EventEditor({ eventId }: { eventId?: number }) {
           onChange={(e) => set("location_id", e.target.value)} required>
           <option value="">انتخاب مکان</option>
           {locations.map((place) => <option value={place.id} key={place.id}>{place.title}</option>)}
-        </select><small><Link className="text-link" href="/panel/locations">مدیریت مکان‌ها</Link></small></div>}
+        </select><small><Link className="text-link" href="/panel/locations">مدیریت کافه‌ها</Link></small></div>}
+      </div></div>
+      </section>
+      <section className={styles.formSection}>
+        {!eventId && <div className={styles.sectionIntro}><span>۰۳</span><div><h3>میزبانی و ثبت‌نام</h3><p>ظرفیت، مبلغ ورودی و وضعیت ثبت‌نام را تنظیم کنید.</p></div></div>}
       <div className="field-row"><Field id="hosts" label="میزبان یا میزبانان" value={form.hosts}
         onChange={(e) => set("hosts", e.target.value)} />
         <Field id="capacity" label="ظرفیت پیشنهادی (غیرالزام‌آور)" type="number" min={0}
@@ -293,8 +307,10 @@ export function EventEditor({ eventId }: { eventId?: number }) {
       <div className="field"><label htmlFor="public-note">یادداشت عمومی</label><textarea
         id="public-note" rows={3} value={form.public_note}
         onChange={(e) => set("public_note", e.target.value)} /></div>
-      <Button className="primary" type="submit" disabled={busy || event?.is_cancelled}>
-        {busy ? "در حال ذخیره…" : "ذخیره اطلاعات"}</Button>
+      </section>
+      <div className={styles.saveBar}><p>پس از ساخت، می‌توانید ثبت‌نام‌ها و حضور هشتی‌نشین‌ها را مدیریت کنید.</p>
+        <Button className="primary" type="submit" disabled={busy || event?.is_cancelled}>
+          {busy ? "در حال ذخیره…" : eventId ? "ذخیره اطلاعات" : "ساخت هشتی"}</Button></div>
     </form></Card>
     {eventId && <Card title="هزینهٔ ورودی"><p className="muted">تغییر مبلغ روی مهمان‌های حاضر و غایب با هزینه اعمال می‌شود؛ مازاد تسویه به کیف پول برمی‌گردد.</p>
       <div className="field-row"><Field id="new-entry-fee" label="ورودی جدید (تومان)" type="number" min={0}
