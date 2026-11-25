@@ -106,7 +106,7 @@ export default function EventImportPage() {
             <a className={styles.templateLink} href="/api/admin/import/events/template">↓ دریافت فایل نمونه</a></div>
           <ul className={styles.tips}>
             <li><span>۱</span><p><strong>شمارهٔ هشتی الزامی است.</strong> اگر عنوان خالی باشد، عنوان هشتی با همان شماره ساخته می‌شود.</p></li>
-            <li><span>۲</span><p><strong>تاریخ و ساعت</strong> را با تاریخ اکسل یا قالب میلادی YYYY-MM-DD و ساعت HH:MM بنویسید.</p></li>
+            <li><span>۲</span><p><strong>تاریخ و ساعت</strong> را به‌شکل شمسی ۱۴۰۲/۱۲/۱۰، میلادی YYYY-MM-DD یا تاریخ اکسل، و ساعت HH:MM بنویسید.</p></li>
             <li><span>۳</span><p><strong>ستون‌های دیگر اختیاری‌اند.</strong> پیش‌نمایش، ردیف‌های ناسازگار را نشان می‌دهد.</p></li>
           </ul>
         </aside>

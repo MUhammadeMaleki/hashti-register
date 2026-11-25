@@ -13,6 +13,7 @@ from app.core.database import build_session_factory
 from app.main import create_app
 from app.models import Event, Location, Registration, User
 from app.seed import bootstrap_admin
+from app.services.event_import import parse_workbook
 
 
 def file_bytes(rows: list[list[object]]) -> bytes:
@@ -23,6 +24,26 @@ def file_bytes(rows: list[list[object]]) -> bytes:
     result = BytesIO()
     book.save(result)
     return result.getvalue()
+
+
+def test_archive_preview_accepts_jalali_and_gregorian_dates():
+    content = file_bytes([
+        ["شماره رویداد", "عنوان", "تاریخ"],
+        [1, "شمسی با رقم لاتین", "1402/12/10"],
+        [2, "شمسی با رقم فارسی", "۱۴۰۳/۰۱/۰۱"],
+        [3, "شمسی با رقم عربی", "١٤٠٣-٠١-٠١"],
+        [4, "میلادی متنی", "2024-02-29"],
+        [5, "تاریخ اکسل", date(2024, 2, 29)],
+        [6, "تاریخ شمسی نامعتبر", "1402/12/30"],
+    ])
+    valid, errors, total = parse_workbook(content)
+    assert (total, len(valid), len(errors)) == (6, 5, 1)
+    assert [item["event_date"] for item in valid] == [
+        date(2024, 2, 29), date(2024, 3, 20), date(2024, 3, 20),
+        date(2024, 2, 29), date(2024, 2, 29),
+    ]
+    assert errors[0]["row"] == 7
+    assert "تاریخ نامعتبر" in errors[0]["reason"]
 
 
 def test_archive_preview_confirm_and_retry(management_environment):  # noqa: F811

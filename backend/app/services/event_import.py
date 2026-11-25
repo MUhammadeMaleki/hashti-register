@@ -1,11 +1,13 @@
 """Parse historical events from the public Excel template."""
 
+import re
 from datetime import date, datetime, time
 from io import BytesIO
 
 from fastapi import HTTPException
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
+from persiantools.jdatetime import JalaliDate
 
 from app.services.import_files import MAX_ROWS, checked_workbook
 
@@ -72,14 +74,27 @@ def _date(value: object) -> date | None:
     elif isinstance(value, date):
         result = value
     elif isinstance(value, str):
+        text = value.strip().translate(str.maketrans(
+            "۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789"))
+        match = re.fullmatch(r"([0-9]{4})[-/]([0-9]{1,2})[-/]([0-9]{1,2})", text)
+        if not match:
+            raise ValueError("تاریخ باید شمسی YYYY/MM/DD یا میلادی YYYY-MM-DD باشد")
+        year, month, day = map(int, match.groups())
         try:
-            result = date.fromisoformat(value.strip())
+            if 1300 <= year <= 1500:
+                result = JalaliDate(year, month, day).to_gregorian()
+            elif 1900 <= year <= 2200:
+                result = date(year, month, day)
+            else:
+                raise ValueError
         except ValueError:
-            raise ValueError("تاریخ باید میلادی و به‌شکل YYYY-MM-DD باشد") from None
+            raise ValueError(
+                "تاریخ نامعتبر است؛ شمسی YYYY/MM/DD یا میلادی YYYY-MM-DD بنویسید"
+            ) from None
     else:
         raise ValueError("تاریخ نامعتبر است")
     if result.year < 1900 or result.year > 2200:
-        raise ValueError("تاریخ باید میلادی و به‌شکل YYYY-MM-DD باشد")
+        raise ValueError("تاریخ نامعتبر است؛ شمسی YYYY/MM/DD یا میلادی YYYY-MM-DD بنویسید")
     return result
 
 
