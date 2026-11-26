@@ -59,7 +59,7 @@ export function AuthForms() {
   }
 
   return <main className="auth-page">
-    <PublicHeader backHref="/" backLabel="بازگشت به صفحهٔ اصلی" hideAccountActions />
+    <PublicHeader backHref="/" backLabel="بازگشت" hideAccountActions />
     <div className="auth-layout">
     <section className="auth-aside">
       <span className="auth-aside-kicker"><span aria-hidden="true">●</span> خوش آمدی به هشتی</span>
