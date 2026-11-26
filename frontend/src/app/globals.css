@@ -888,15 +888,15 @@ th { background:var(--soft); color:var(--green-dark); }
 .guest-account-main { display:grid; grid-template-columns:minmax(0,1fr); align-items:start; gap:1rem; }
 .guest-account-side { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; min-width:0; }
 .guest-account-panel { min-width:0; padding:1.3rem; border:1px solid #d1e2ea; border-radius:1.1rem; background:#fff; box-shadow:0 4px 0 #dceaf1; }
-.guest-account .guest-profile-hero { border:2px solid #101827; }
-.guest-account .guest-wallet-hero { border:2px solid #0067a5; }
-.guest-account .guest-account-stats > div { border:2px solid #0067a5; }
-.guest-account .guest-account-stats > div:nth-child(2) { border-color:#ff7700; }
-.guest-account .guest-account-stats > div:nth-child(3) { border-color:#101827; }
-.guest-account .guest-registrations { border:2px solid #101827; }
-.guest-account .guest-receipt-panel { border:2px solid #ff7700; }
-.guest-account .guest-transactions { border:2px solid #0067a5; }
-.guest-account .guest-payment-history { border:2px solid #101827; }
+.guest-account .guest-profile-hero,.guest-account .guest-wallet-hero,
+.guest-account .guest-account-stats > div,.guest-account .guest-account-panel {
+  border:2px solid var(--account-frame,#101827);
+  border-radius:1.5rem;
+  box-shadow:4px 5px 0 #101827;
+}
+.guest-account .guest-wallet-hero,.guest-account .guest-account-stats > div:first-child,
+.guest-account .guest-transactions { --account-frame:#0067a5; }
+.guest-account .guest-account-stats > div:nth-child(2),.guest-account .guest-receipt-panel { --account-frame:#ff7700; }
 .guest-account-side > .guest-account-panel { display:flex; flex-direction:column; height:24rem; overflow:hidden; }
 .guest-account-side > .guest-account-panel > .guest-panel-heading { flex:none; }
 .guest-account-side .guest-transaction-list,.guest-account-side .guest-payment-list { flex:1; min-height:0; align-content:start; overflow-y:auto; overscroll-behavior:contain; padding-left:.35rem; scrollbar-width:thin; scrollbar-color:#a9c9da transparent; }
