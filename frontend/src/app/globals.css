@@ -897,6 +897,9 @@ th { background:var(--soft); color:var(--green-dark); }
 .guest-account .guest-receipt-panel { border:2px solid #ff7700; }
 .guest-account .guest-transactions { border:2px solid #0067a5; }
 .guest-account .guest-payment-history { border:2px solid #101827; }
+.guest-account-side > .guest-account-panel { display:flex; flex-direction:column; height:24rem; overflow:hidden; }
+.guest-account-side > .guest-account-panel > .guest-panel-heading { flex:none; }
+.guest-account-side .guest-transaction-list,.guest-account-side .guest-payment-list { flex:1; min-height:0; align-content:start; overflow-y:auto; overscroll-behavior:contain; padding-left:.35rem; scrollbar-width:thin; scrollbar-color:#a9c9da transparent; }
 .guest-panel-heading { display:flex; align-items:end; justify-content:space-between; gap:.7rem; padding-bottom:.8rem; border-bottom:2px solid #143550; }
 .guest-panel-heading > div > span { color:#e66b00; font-size:.75rem; font-weight:800; }
 .guest-panel-heading h2 { margin:.1rem 0 0; color:#143550; font-size:1.45rem; line-height:1.3; }

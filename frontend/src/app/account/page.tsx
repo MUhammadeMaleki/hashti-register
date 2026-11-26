@@ -311,7 +311,7 @@ export default function AccountPage() {
       <div className="guest-account-side">
           <section id="transactions" className="guest-account-panel guest-transactions">
             <div className="guest-panel-heading"><div><span>رد پای اعتبار</span><h2>گردش کیف پول</h2></div></div>
-            <div className="guest-transaction-list">{transactions.map((item) =>
+            <div className="guest-transaction-list" tabIndex={0} role="region" aria-label="فهرست گردش کیف پول">{transactions.map((item) =>
               <div className="guest-transaction" key={item.id}>
                 <span className={item.amount < 0 ? "is-out" : "is-in"} aria-hidden="true">{item.amount < 0 ? "↗" : "↙"}</span>
                 <div><strong>{transactionNames[item.type] ?? item.type}</strong>
@@ -324,7 +324,7 @@ export default function AccountPage() {
         <section className="guest-account-panel guest-payment-history">
         <div className="guest-panel-heading"><div><span>پیگیری پرداخت‌ها</span><h2>رسیدهای من</h2></div>
           <strong>{persianDigits(String(payments.length))} رسید</strong></div>
-        <div className="guest-payment-list">{payments.map((item) =>
+        <div className="guest-payment-list" tabIndex={0} role="region" aria-label="فهرست رسیدهای من">{payments.map((item) =>
           <article className="guest-payment" key={item.id}>
             <div><span>رسید شمارهٔ {persianDigits(String(item.id))}</span><strong>{formatToman(item.amount)}</strong>
               <small>{formatJalali(item.created_at)} · {item.event_id === null ? "شارژ مستقل" :
