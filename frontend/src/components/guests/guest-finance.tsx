@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Button, Card, Field, MoneyField } from "@/components/ui";
 import { SettlementOperations } from "@/components/guests/settlement-operations";
 import { errorMessage } from "@/lib/api";
@@ -36,6 +36,9 @@ export function GuestWalletAdjustment({ profile, onChanged }: {
   }
 
   return <Card title="اصلاح دستی کیف پول">
+    <div className={styles.walletBalance}><span>موجودی فعلی کیف پول</span>
+      <strong>{profile.wallet_balance === null ? "ناموجود" : formatToman(profile.wallet_balance)}</strong>
+      <small>اصلاح اعتبار، بدهی هشتی‌ها را خودکار تسویه نمی‌کند.</small></div>
     {error && <p className="alert error" role="alert">{error}</p>}
     {notice && <p className="alert success" role="status">{notice}</p>}
     <form className="form-stack" onSubmit={adjust}>
@@ -52,10 +55,9 @@ export function GuestWalletAdjustment({ profile, onChanged }: {
   </Card>;
 }
 
-export function GuestFinance({ profile, onChanged }: {
-  profile: GuestProfile; onChanged: () => Promise<void>;
+export function GuestFinance({ profile, registration, onChanged }: {
+  profile: GuestProfile; registration: GuestProfile["registrations"][number]; onChanged: () => Promise<void>;
 }) {
-  const [registrationId, setRegistrationId] = useState<number | null>(null);
   const [settleAmount, setSettleAmount] = useState("");
   const [discountAmount, setDiscountAmount] = useState("");
   const [discountReason, setDiscountReason] = useState("");
@@ -63,12 +65,10 @@ export function GuestFinance({ profile, onChanged }: {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [revision, setRevision] = useState(0);
-  const pickerRef = useRef<HTMLDetailsElement>(null);
-  const active = profile.registrations.filter((row) => row.status === "active");
-  const chosen = active.find((row) => row.id === registrationId);
+  const chosen = registration;
   const walletValue = Number(settleAmount);
   const discountValue = Number(discountAmount);
-  const canSettle = !!chosen && !chosen.event.is_cancelled &&
+  const canSettle = chosen.status === "active" && !chosen.event.is_cancelled &&
     Number.isSafeInteger(walletValue) && Number.isSafeInteger(discountValue) &&
     walletValue >= 0 && discountValue >= 0 && walletValue + discountValue > 0 &&
     walletValue <= (profile.wallet_balance ?? 0) &&
@@ -84,7 +84,7 @@ export function GuestFinance({ profile, onChanged }: {
   }
 
   async function settle(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (!chosen) return;
+    event.preventDefault();
     const value = Number(settleAmount);
     const discount = Number(discountAmount);
     if (!Number.isSafeInteger(value) || !Number.isSafeInteger(discount) ||
@@ -100,7 +100,8 @@ export function GuestFinance({ profile, onChanged }: {
     }
   }
 
-  return <Card title="تسویهٔ هشتی">
+  return <div className={styles.inlineFinance}>
+    <h3>تسویهٔ هشتی {chosen.event.event_number.toLocaleString("fa-IR")}</h3>
     <div className={styles.financeOverview}><p>بدهی هشتی‌ها: {formatToman(profile.finance_overview.total_debt)} · بدهی خالص پس از اعتبار:
       {" "}{formatToman(profile.finance_overview.net_debt)}</p>
     <p>سقف بدهی: {profile.finance_overview.debt_ceiling === null ? "تعیین‌نشده" :
@@ -110,37 +111,26 @@ export function GuestFinance({ profile, onChanged }: {
     {error && <p className="alert error" role="alert">{error}</p>}
     {notice && <p className="alert success" role="status">{notice}</p>}
     <div className={styles.financeAction}>
-    <div className={styles.financePicker}><span id="finance-registration-label">ثبت‌نام</span>
-      <details ref={pickerRef}><summary aria-labelledby="finance-registration-label">
-        <span>{chosen ? `هشتی ${chosen.event.event_number.toLocaleString("fa-IR")} · ${chosen.event.title}` : "انتخاب هشتی"}</span>
-        <span aria-hidden="true">⌄</span></summary>
-        <div className={styles.financePickerOptions} role="group" aria-label="هشتی‌های ثبت‌نام‌شده">
-          {active.length ? active.map((row) => <button type="button" key={row.id}
-            aria-pressed={row.id === registrationId}
-            onClick={() => { setRegistrationId(row.id); if (pickerRef.current) pickerRef.current.open = false; }}>
-            <strong>هشتی {row.event.event_number.toLocaleString("fa-IR")}</strong>
-            <span>{row.event.title}</span></button>) : <p>ثبت‌نام فعالی برای تسویه وجود ندارد.</p>}
-        </div>
-      </details>
-    </div>
-    {chosen && <><p>بدهی: {formatToman(chosen.outstanding_total)} · موجودی:
+    <p>بدهی: {formatToman(chosen.outstanding_total)} · موجودی:
       {" "}{formatToman(profile.wallet_balance ?? 0)} · قابل برداشت از کیف پول:
       {" "}{formatToman(Math.min(chosen.outstanding_total, profile.wallet_balance ?? 0))}</p>
       <p>تخفیف قبلی: {formatToman(chosen.discount_total)}</p>
-      <form className="admin-settlement-form" onSubmit={settle}><MoneyField id="settle-amount"
+      {chosen.outstanding_total > 0 && !chosen.event.is_cancelled ? <form className="admin-settlement-form" onSubmit={settle}><MoneyField id={`settle-amount-${chosen.id}`}
         label="برداشت از کیف پول (تومان)" value={settleAmount}
         onValueChange={setSettleAmount} placeholder="۰" />
-        <MoneyField id="discount-amount" label="تخفیف (تومان)" value={discountAmount}
+        <MoneyField id={`discount-amount-${chosen.id}`} label="تخفیف (تومان)" value={discountAmount}
           onValueChange={setDiscountAmount} placeholder="۰" />
-        {Number(discountAmount) > 0 && <Field id="discount-reason" label="دلیل تخفیف"
+        {Number(discountAmount) > 0 && <Field id={`discount-reason-${chosen.id}`} label="دلیل تخفیف"
           value={discountReason} onChange={(event) => setDiscountReason(event.target.value)}
           maxLength={500} required />}
         <Button type="submit" className="primary admin-settlement-confirm"
           disabled={busy || !canSettle}
           title="ثبت تسویه و تخفیف" aria-label="ثبت تسویه و تخفیف">
-          {busy ? "…" : "✓"}</Button></form>
+          {busy ? "…" : "✓"}</Button></form> :
+        <p className={styles.settlementEmpty}>{chosen.event.is_cancelled ?
+          "این هشتی لغو شده و تسویهٔ تازه ندارد." : "ماندهٔ این هشتی تسویه شده است."}</p>}
       <SettlementOperations registrationId={chosen.id} revision={revision}
-        onChanged={onChanged} /></>}
+        onChanged={onChanged} />
     </div>
-  </Card>;
+  </div>;
 }

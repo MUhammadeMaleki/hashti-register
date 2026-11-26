@@ -22,6 +22,21 @@ function attendanceName(value: string) {
     absent_forfeited: "غایب، با هزینه" } as Record<string, string>)[value] ?? value;
 }
 
+function RegistrationFinance({ profile, registration, onChanged }: {
+  profile: GuestProfile; registration: GuestProfile["registrations"][number];
+  onChanged: () => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  if (registration.status !== "active") return null;
+  return <div className={styles.registrationFinance}>
+    <button type="button" className={styles.registrationFinanceToggle} aria-expanded={open}
+      onClick={() => setOpen((value) => !value)}>
+      <span>تسویه و سوابق مالی این هشتی</span><span aria-hidden="true">{open ? "−" : "+"}</span>
+    </button>
+    {open && <GuestFinance profile={profile} registration={registration} onChanged={onChanged} />}
+  </div>;
+}
+
 export function GuestProfileView({ guestId }: { guestId: number }) {
   const router = useRouter();
   const [profile, setProfile] = useState<GuestProfile | null>(null);
@@ -166,8 +181,6 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
     {notice && <p className="alert success" role="status">{notice}</p>}
     {profile && form && <>
       <div className={styles.summary} aria-label="خلاصهٔ وضعیت هشتی‌نشین">
-        <div><span>موجودی کیف پول</span><strong>{profile.wallet_balance === null ? "ناموجود" :
-          formatToman(profile.wallet_balance)}</strong></div>
         <div><span>بدهی هشتی‌ها</span><strong>{formatToman(profile.finance_overview.total_debt)}</strong></div>
         <div><span>ماندهٔ بدهی پس از اعتبار</span><strong>{formatToman(profile.finance_overview.net_debt)}</strong></div>
         <div><span>هشتی‌های ثبت‌نام‌شده</span><strong>{profile.registrations.length.toLocaleString("fa-IR")}</strong></div>
@@ -204,6 +217,7 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
                 {discount.amount > 0 ? "تخفیف" : "اصلاح تخفیف"}: {formatToman(Math.abs(discount.amount))}
                 {" "}— {discount.reason} · {discount.actor_name} · {formatJalali(discount.created_at)}</p>)}
             </div>}
+            <RegistrationFinance profile={profile} registration={item} onChanged={refreshFinance} />
             </div>
           </details>)}</div>
         {!profile.registrations.length && <p className="muted">هنوز ثبت‌نامی ندارد.</p>}
@@ -213,6 +227,10 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
         </Button>}
       </Card></div>
       <div id="guest-information" className={`${styles.sectionCard} ${styles.identityPanel}`}><Card title="اطلاعات و علاقه‌مندی‌ها">
+      <div className={styles.identityIntro}><span className={styles.personIcon} aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="16" r="7" stroke="currentColor" strokeWidth="2.5" />
+          <path d="M10 39c0-8 6-13 14-13s14 5 14 13" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>
+      </span><div><strong>پروندهٔ شخصی</strong><small>اطلاعات و سلیقه‌های هشتی‌نشین در یک نگاه</small></div></div>
       <dl className={styles.profileFacts}>
         <div><dt>شماره موبایل</dt><dd dir="ltr">{persianDigits(profile.phone)}</dd></div>
         <div><dt>سن</dt><dd>{profile.age === null ? "ثبت نشده" : persianDigits(String(profile.age))}</dd></div>
@@ -220,7 +238,8 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
         <div><dt>تحصیلات</dt><dd>{profile.education || "ثبت نشده"}</dd></div>
         <div><dt>سقف بدهی اختصاصی</dt><dd>{profile.debt_ceiling === null ? "سقف عمومی" : formatToman(profile.debt_ceiling)}</dd></div>
       </dl>
-      <div className={styles.interestSummary}><span>علاقه‌مندی‌ها</span>
+      <div className={styles.interestSummary}><span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 20s-8-4.8-8-10a4.3 4.3 0 0 1 8-2.1A4.3 4.3 0 0 1 20 10c0 5.2-8 10-8 10Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg> علاقه‌مندی‌ها</span>
         <div>{profile.tags.length ? profile.tags.map((tag) => <span key={tag.id}>{tag.name}</span>) :
           <small>هنوز علاقه‌مندی ثبت نشده است.</small>}</div></div>
       {profile.internal_note && <p className={styles.internalNote}><strong>یادداشت داخلی</strong>{profile.internal_note}</p>}
@@ -283,8 +302,7 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
           <p>{note.text}</p></div>)}</div>
         {!profile.notes.length && <p className="muted">هنوز یادداشتی ثبت نشده است.</p>}</Card></div>
       </div>
-      <div id="guest-finance" className={styles.activityGrid}>
-      <div className={styles.sectionCard}><Card title="گردش مالی">
+      <div id="guest-finance" className={styles.sectionCard}><Card title="گردش مالی">
         <h3>رسیدهای واریز <span>{profile.payments.length.toLocaleString("fa-IR")}</span></h3>
         <div className={styles.timeline}>{profile.payments.map((payment) =>
           <div className={styles.timelineItem} key={payment.id}>
@@ -301,10 +319,7 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
             {transaction.actor_name && <p>ثبت‌کننده: {transaction.actor_name}</p>}
           </div>)}</div>
         {!profile.payments.length && !profile.wallet_transactions.length &&
-          <p className="muted">هنوز تراکنشی ندارد.</p>}</Card></div>
-      <div className={`${styles.sectionCard} ${styles.financeSection}`}>
-        <GuestFinance profile={profile} onChanged={refreshFinance} />
-      </div>
+          <p className="muted">هنوز تراکنشی ندارد.</p>}</Card>
       </div>
     </>}
   </div></AppShell>;
