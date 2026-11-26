@@ -22,6 +22,12 @@ function attendanceName(value: string) {
     absent_forfeited: "غایب، با هزینه" } as Record<string, string>)[value] ?? value;
 }
 
+function ChevronIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>;
+}
+
 function RegistrationFinance({ profile, registration, onChanged }: {
   profile: GuestProfile; registration: GuestProfile["registrations"][number];
   onChanged: () => Promise<void>;
@@ -31,7 +37,7 @@ function RegistrationFinance({ profile, registration, onChanged }: {
   return <div className={styles.registrationFinance}>
     <button type="button" className={styles.registrationFinanceToggle} aria-expanded={open}
       onClick={() => setOpen((value) => !value)}>
-      <span>تسویه و سوابق مالی این هشتی</span><span aria-hidden="true">{open ? "−" : "+"}</span>
+      <span>تسویه و سوابق مالی این هشتی</span><span className={styles.toggleIcon}><ChevronIcon /></span>
     </button>
     {open && <GuestFinance profile={profile} registration={registration} onChanged={onChanged} />}
   </div>;
@@ -165,6 +171,9 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
             <span dir="ltr">{persianDigits(profile.phone)}</span>
             <span className={profile.has_account ? styles.accountActive : styles.accountInactive}>
               {profile.has_account ? "حساب فعال" : "بدون حساب ورود"}</span>
+            <span className={styles.heroWallet}>موجودی کیف پول: <strong>
+              {profile.wallet_balance === null ? "ناموجود" : formatToman(profile.wallet_balance)}
+            </strong></span>
           </div>}
           {tempPassword && <div role="status" className={styles.tempPassword}>
             <span>رمز موقت: <code dir="ltr">{tempPassword}</code>
@@ -186,6 +195,7 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
         <div><span>هشتی‌های ثبت‌نام‌شده</span><strong>{profile.registrations.length.toLocaleString("fa-IR")}</strong></div>
       </div>
       <div className={styles.profileGrid}>
+      <div className={styles.profileColumn}>
       <div id="guest-registrations" className={`${styles.sectionCard} ${styles.registrationsPanel}`}><Card title="هشتی‌ها و وضعیت حضور">
         <div className={styles.registrationList}>{profile.registrations.slice(0, visibleRegistrations).map((item) =>
           <details className={styles.registration} key={item.id}>
@@ -194,7 +204,7 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
                 <small>حضور: {attendanceName(item.attendance)} · مانده: {formatToman(item.outstanding_total)}</small></span>
               <span className={item.status === "active" ? styles.activeBadge : styles.inactiveBadge}>
                 {item.status === "active" ? "ثبت‌نام فعال" : "لغوشده"}</span>
-              <span className={styles.registrationChevron} aria-hidden="true">⌄</span></summary>
+              <span className={styles.registrationChevron}><ChevronIcon /></span></summary>
             <div className={styles.registrationBody}>
             <div className={styles.registrationDetails}>
               <div><small>زمان</small><span>{item.event.event_date ?
@@ -226,6 +236,11 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
           نمایش هشتی‌های بیشتر · {persianDigits(String(profile.registrations.length - visibleRegistrations))} مورد باقی‌مانده
         </Button>}
       </Card></div>
+      <div id="guest-wallet" className={styles.sectionCard}>
+        <GuestWalletAdjustment profile={profile} onChanged={refreshFinance} />
+      </div>
+      </div>
+      <div className={styles.profileColumn}>
       <div id="guest-information" className={`${styles.sectionCard} ${styles.identityPanel}`}><Card title="اطلاعات و علاقه‌مندی‌ها">
       <div className={styles.identityIntro}><span className={styles.personIcon} aria-hidden="true">
         <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="16" r="7" stroke="currentColor" strokeWidth="2.5" />
@@ -243,7 +258,7 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
         <div>{profile.tags.length ? profile.tags.map((tag) => <span key={tag.id}>{tag.name}</span>) :
           <small>هنوز علاقه‌مندی ثبت نشده است.</small>}</div></div>
       {profile.internal_note && <p className={styles.internalNote}><strong>یادداشت داخلی</strong>{profile.internal_note}</p>}
-      <details className={styles.editPanel}><summary>ویرایش اطلاعات و علاقه‌مندی‌ها <span aria-hidden="true">⌄</span></summary>
+      <details className={styles.editPanel}><summary>ویرایش اطلاعات و علاقه‌مندی‌ها <span className={styles.toggleIcon}><ChevronIcon /></span></summary>
       <div className={styles.informationGrid}><form className="form-stack" onSubmit={save}>
         <div className="field-row"><Field id="first-name" label="نام" required value={form.first_name}
           onChange={(event) => set("first_name", event.target.value)} />
@@ -281,11 +296,6 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
           <Button type="submit" className="secondary" disabled={busy}>ساخت برچسب</Button>
         </form>
       </aside></div></details></Card></div>
-      </div>
-      <div id="guest-wallet" className={styles.activityGrid}>
-      <div className={styles.sectionCard}>
-        <GuestWalletAdjustment profile={profile} onChanged={refreshFinance} />
-      </div>
       <div className={styles.sectionCard}><Card title="یادداشت‌های پیگیری"><form className="form-stack" onSubmit={addNote}>
         <div className="field"><label htmlFor="note-type">نوع یادداشت</label>
           <select id="note-type" value={noteType} onChange={(event) =>
@@ -301,6 +311,7 @@ export function GuestProfileView({ guestId }: { guestId: number }) {
           <small>{note.created_by} · {formatJalali(note.created_at)}</small>
           <p>{note.text}</p></div>)}</div>
         {!profile.notes.length && <p className="muted">هنوز یادداشتی ثبت نشده است.</p>}</Card></div>
+      </div>
       </div>
       <div id="guest-finance" className={styles.sectionCard}><Card title="گردش مالی">
         <h3>رسیدهای واریز <span>{profile.payments.length.toLocaleString("fa-IR")}</span></h3>
