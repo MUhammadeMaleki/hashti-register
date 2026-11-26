@@ -67,7 +67,7 @@ export function AuthForms() {
       <p>به جمع هشتی‌نشین‌ها بپیوند؛ هشتی‌های پیش رو، حضور و کیف پولت را یک‌جا دنبال کن.</p>
       <div className="auth-aside-art" aria-hidden="true"><span className="auth-art-ring" />
         <Image src="/hashti-mark.svg" alt="" width={270} height={190} unoptimized /></div>
-      <div className="auth-aside-footer"><span>هشتی‌نشینی</span><span>گفت‌وگو</span><span>آشنایی</span></div>
+      <div className="auth-aside-footer"><span>هشتی‌نشینی</span><span>گفت‌وگو</span></div>
     </section>
     <div className="auth-form-panel"><Card>
       <span className="auth-form-kicker">حساب کاربری هشتی</span>
