@@ -81,14 +81,18 @@ export function AppShell({ kind, children }: { kind: "user" | "guest"; children:
       {kind === "guest" ? <Link href="/" className="guest-header-brand">
         <span className="guest-header-mark"><img src="/hashti-mark.svg" alt="" /></span>
         <span><small>هشتی</small><strong>حساب من</strong></span>
-      </Link> : <div className="workspace-title"><span className="eyebrow">هشتی / فضای مدیریت</span>
+      </Link> : <div className="admin-title-group">
+        <Link href="/" className="admin-home-mark" aria-label="بازگشت به صفحهٔ اصلی" title="صفحهٔ اصلی">
+          <img src="/hashti-mark.svg" alt="" />
+        </Link>
+        <div className="workspace-title"><span className="eyebrow">هشتی / فضای مدیریت</span>
         <h1>{pathname === "/panel/users" || pathname === "/panel/settings" ? "حساب‌ها و تنظیمات" :
           pathname.startsWith("/panel/events") ? "هشتی‌ها" :
           pathname.startsWith("/panel/guests") || pathname === "/panel/import" ? "هشتی‌نشین‌ها" :
           pathname.startsWith("/panel/payments") ? "بررسی رسیدها" :
           pathname === "/panel/reports" ? "گزارش‌ها" :
           pathname === "/panel/locations" ? "کافه‌ها" :
-          "نمای کلی"}</h1></div>}
+          "نمای کلی"}</h1></div></div>}
       <div className="workspace-session">{kind === "user" ?
         <div className="admin-session-identity"><span className="admin-session-mark" aria-hidden="true">
           <img src="/hashti-mark.svg" alt="" /></span>

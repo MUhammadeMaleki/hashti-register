@@ -6,8 +6,8 @@ import { useSession } from "@/hooks/use-session";
 import { financeApi } from "@/lib/finance";
 import { formatToman } from "@/lib/format";
 
-export function PublicHeader({ backHref, backLabel }: {
-  backHref?: string; backLabel?: string;
+export function PublicHeader({ backHref, backLabel, hideAccountActions = false }: {
+  backHref?: string; backLabel?: string; hideAccountActions?: boolean;
 }) {
   const { session, loading } = useSession();
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
@@ -38,8 +38,8 @@ export function PublicHeader({ backHref, backLabel }: {
       <span>هشتی<span className="brand-dot">.</span></span>
     </Link>
     <nav className="public-header-actions" aria-label="پیوندهای حساب و صفحه">
-      {backHref && backLabel && <Link className="text-link" href={backHref}>{backLabel}</Link>}
-      {!loading && (session?.actor_type === "guest" ? <>
+      {backHref && backLabel && <Link className="button secondary" href={backHref}>{backLabel}</Link>}
+      {!hideAccountActions && !loading && (session?.actor_type === "guest" ? <>
         <Link className="public-icon-link" href="/account#profile" aria-label="پروفایل من"
           title="پروفایل من"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
             strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

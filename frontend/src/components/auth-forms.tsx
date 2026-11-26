@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { PublicHeader } from "@/components/public-header";
 import { auth, errorMessage } from "@/lib/api";
 import { normalizeMobile } from "@/lib/format";
 import { Button, Card, Field } from "@/components/ui";
@@ -59,11 +59,7 @@ export function AuthForms() {
   }
 
   return <main className="auth-page">
-    <header className="auth-topbar"><Link href="/" className="auth-brand">
-      <span className="public-brand-mark"><Image src="/hashti-mark.svg" alt="" width={28} height={28} unoptimized /></span>
-      <strong>هشتی<span className="brand-dot">.</span></strong></Link>
-      <Link href="/" className="auth-home-link">بازگشت به صفحهٔ اصلی <span aria-hidden="true">←</span></Link>
-    </header>
+    <PublicHeader backHref="/" backLabel="بازگشت به صفحهٔ اصلی" hideAccountActions />
     <div className="auth-layout">
     <section className="auth-aside">
       <span className="auth-aside-kicker"><span aria-hidden="true">●</span> خوش آمدی به هشتی</span>
