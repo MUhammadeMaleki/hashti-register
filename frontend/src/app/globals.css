@@ -870,7 +870,6 @@ th { background:var(--soft); color:var(--green-dark); }
 .guest-profile-tags { display:flex; flex-wrap:wrap; gap:.3rem .8rem; margin-top:1.3rem; color:#587185; font-size:.72rem; }
 .guest-profile-tags span + span::before { content:"•"; margin-left:.8rem; color:#ff7700; }
 .guest-wallet-hero { position:relative; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; align-self:stretch; min-width:0; margin:.2rem 0 1.2rem; padding:1.2rem; border:1px solid #0067a5; border-radius:.85rem; background:linear-gradient(145deg,#e5f4fb,#f8fcfe 75%); color:#143550; }
-.guest-wallet-hero::after { content:""; position:absolute; left:0; top:0; bottom:0; width:5px; border-radius:.85rem 0 0 .85rem; background:#ff7700; }
 .guest-wallet-hero > span { color:#0067a5; font-size:.76rem; font-weight:900; }
 .guest-wallet-hero h2 { margin:.1rem 0 .3rem; color:#587185; font-size:.85rem; }
 .guest-wallet-hero strong { color:#0067a5; font-size:clamp(1.65rem,2.6vw,2.25rem); font-weight:900; line-height:1.3; }
